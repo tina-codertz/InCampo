@@ -3,11 +3,13 @@ import { Redirect, Tabs, type Href } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 
 import { TabBar } from "@/components/tab-bar";
+import { useBackendSync } from "@/hooks/use-backend-sync";
 import { useTheme } from "@/hooks/use-theme";
 
 export default function TabsLayout() {
   const { isSignedIn, isLoaded } = useAuth();
   const { theme } = useTheme();
+  useBackendSync();
 
   if (!isLoaded) {
     return (

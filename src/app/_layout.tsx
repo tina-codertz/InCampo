@@ -46,6 +46,13 @@ function RootNavigator() {
             animation: "slide_from_right",
           }}
         />
+        <Stack.Screen
+          name="settings/index"
+          options={{
+            presentation: "modal",
+            animation: "slide_from_bottom",
+          }}
+        />
       </Stack>
     </>
   );

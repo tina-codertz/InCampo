@@ -1,27 +1,26 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { MOCK_EVENTS } from "@/constants/mock-data";
+import { fetchEventById, fetchEvents } from "@/services/events";
+import { useSupabase } from "@/hooks/use-supabase";
 import type { EventItem } from "@/types";
 
-async function fetchEvents(): Promise<EventItem[]> {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  return MOCK_EVENTS;
-}
-
 export function useEvents() {
+  const client = useSupabase();
+
   return useQuery({
     queryKey: ["events"],
-    queryFn: fetchEvents,
+    queryFn: () => fetchEvents(client),
     staleTime: 1000 * 60 * 5,
   });
 }
 
 export function useEvent(id: string) {
+  const client = useSupabase();
+
   return useQuery({
     queryKey: ["events", id],
     queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      const event = MOCK_EVENTS.find((item) => item.id === id);
+      const event = await fetchEventById(client, id);
       if (!event) {
         throw new Error("Event not found");
       }

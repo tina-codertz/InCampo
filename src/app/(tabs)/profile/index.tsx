@@ -1,55 +1,78 @@
-import { Image } from "expo-image";
 import { type Href, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Share, Text, View } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { Icon } from "@/components/icon";
+import { ProfileActivityList } from "@/components/profile-activity-list";
+import { ProfileSavedGrid } from "@/components/profile-saved-grid";
 import { StudentAvatar } from "@/components/student-avatar";
 import { radius, spacing } from "@/constants/theme";
+import {
+  useProfileActivityItems,
+  useProfileSavedItems,
+  useProfileStats,
+} from "@/hooks/use-profile-content";
 import { useTheme } from "@/hooks/use-theme";
 import { useAppStore } from "@/store/use-app-store";
-import { useClubsStore } from "@/store/use-clubs-store";
 import { useProfileStore } from "@/store/use-profile-store";
 
-const STATS_BASE = [
-  { label: "Posts", value: "27", icon: "square.grid.2x2", color: "#8B5CF6" },
-  { label: "Clubs", icon: "person.2", color: "#34D399" },
-  { label: "Saved", value: "12", icon: "bookmark", color: "#60A5FA" },
-] as const;
-
-const ENGAGEMENT = [
-  { label: "Liked", value: "84", icon: "heart.fill", color: "#EF4444" },
-  { label: "Comments", value: "31", icon: "bubble.left.fill", color: "#3B82F6" },
-  { label: "Saved", value: "12", icon: "bookmark.fill", color: "#8B5CF6" },
-  { label: "Events", value: "5", icon: "star.fill", color: "#FBBF24" },
-] as const;
-
-const SAVED_IMAGES = [
-  "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&q=80",
-  "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=80",
-];
-
 export default function ProfileScreen() {
-  const { theme } = useTheme();
+  const { theme, colorScheme } = useTheme();
   const router = useRouter();
   const toggleColorScheme = useAppStore((state) => state.toggleColorScheme);
   const profile = useProfileStore((state) => state.profile);
   const getInitials = useProfileStore((state) => state.getInitials);
-  const joinedClubCount = useClubsStore((state) => state.getJoinedCount());
+  const stats = useProfileStats();
+  const savedItems = useProfileSavedItems();
+  const activityItems = useProfileActivityItems();
   const [activeTab, setActiveTab] = useState<"saved" | "activity">("saved");
 
-  const stats = STATS_BASE.map((stat) =>
-    stat.label === "Clubs"
-      ? { ...stat, value: String(joinedClubCount) }
-      : stat
-  );
+  const headerStats = [
+    { label: "Posts", value: stats.posts },
+    { label: "Clubs", value: stats.clubs },
+    { label: "Saved", value: stats.saved },
+  ] as const;
+
+  const engagement = [
+    { label: "Liked", value: stats.liked, icon: "heart.fill", color: "#EF4444" },
+    {
+      label: "Comments",
+      value: stats.comments,
+      icon: "bubble.left.fill",
+      color: "#3B82F6",
+    },
+    {
+      label: "Saved",
+      value: stats.saved,
+      icon: "bookmark.fill",
+      color: "#8B5CF6",
+    },
+    { label: "Events", value: stats.events, icon: "star.fill", color: "#FBBF24" },
+  ] as const;
 
   function openEditProfile() {
     if (process.env.EXPO_OS === "ios") {
       void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     router.push("/edit-profile" as Href);
+  }
+
+  function openSettings() {
+    if (process.env.EXPO_OS === "ios") {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    router.push("/settings" as Href);
+  }
+
+  async function handleShareProfile() {
+    if (process.env.EXPO_OS === "ios") {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    await Share.share({
+      message: `${profile.fullName} (@${profile.username}) on Incampo\n${profile.bio}`,
+    });
   }
 
   return (
@@ -95,10 +118,14 @@ export default function ProfileScreen() {
               justifyContent: "center",
             }}
           >
-            <Icon name="sun.max" size={18} color={theme.textPrimary} />
+            <Icon
+              name={colorScheme === "dark" ? "sun.max" : "moon"}
+              size={18}
+              color={theme.textPrimary}
+            />
           </Pressable>
           <Pressable
-            onPress={openEditProfile}
+            onPress={openSettings}
             style={{
               width: 40,
               height: 40,
@@ -115,7 +142,10 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <View style={{ alignItems: "center", gap: 12 }}>
+      <Animated.View
+        entering={FadeInDown.springify()}
+        style={{ alignItems: "center", gap: 12 }}
+      >
         <Pressable onPress={openEditProfile} style={{ position: "relative" }}>
           <StudentAvatar
             initials={getInitials()}
@@ -153,7 +183,14 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
-        <View style={{ flexDirection: "row", gap: 16, flexWrap: "wrap", justifyContent: "center" }}>
+        <View
+          style={{
+            flexDirection: "row",
+            gap: 16,
+            flexWrap: "wrap",
+            justifyContent: "center",
+          }}
+        >
           <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
             <Icon name="graduationcap" size={14} color={theme.textMuted} />
             <Text selectable style={{ color: theme.textSecondary, fontSize: 13 }}>
@@ -182,7 +219,7 @@ export default function ProfileScreen() {
         </Text>
 
         <View style={{ flexDirection: "row", gap: 24 }}>
-          {stats.map((stat) => (
+          {headerStats.map((stat) => (
             <View key={stat.label} style={{ alignItems: "center", gap: 2 }}>
               <Text
                 selectable
@@ -201,7 +238,7 @@ export default function ProfileScreen() {
             </View>
           ))}
         </View>
-      </View>
+      </Animated.View>
 
       <View style={{ flexDirection: "row", gap: 12 }}>
         <Pressable
@@ -219,6 +256,7 @@ export default function ProfileScreen() {
           </Text>
         </Pressable>
         <Pressable
+          onPress={() => void handleShareProfile()}
           style={{
             flex: 1,
             backgroundColor: theme.surface,
@@ -235,16 +273,11 @@ export default function ProfileScreen() {
         </Pressable>
       </View>
 
-      <View
-        style={{
-          flexDirection: "row",
-          flexWrap: "wrap",
-          gap: 12,
-        }}
-      >
-        {ENGAGEMENT.map((item) => (
-          <View
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12 }}>
+        {engagement.map((item, index) => (
+          <Animated.View
             key={item.label}
+            entering={FadeInDown.delay(index * 60).springify()}
             style={{
               width: "47%",
               backgroundColor: theme.surface,
@@ -270,7 +303,7 @@ export default function ProfileScreen() {
             <Text selectable style={{ color: theme.textMuted, fontSize: 13 }}>
               {item.label}
             </Text>
-          </View>
+          </Animated.View>
         ))}
       </View>
 
@@ -287,7 +320,12 @@ export default function ProfileScreen() {
         {(["saved", "activity"] as const).map((tab) => (
           <Pressable
             key={tab}
-            onPress={() => setActiveTab(tab)}
+            onPress={() => {
+              if (process.env.EXPO_OS === "ios") {
+                void Haptics.selectionAsync();
+              }
+              setActiveTab(tab);
+            }}
             style={{
               flex: 1,
               paddingVertical: 10,
@@ -311,20 +349,11 @@ export default function ProfileScreen() {
         ))}
       </View>
 
-      <View style={{ flexDirection: "row", gap: 8 }}>
-        {SAVED_IMAGES.map((uri) => (
-          <Image
-            key={uri}
-            source={{ uri }}
-            style={{
-              flex: 1,
-              height: 140,
-              borderRadius: radius.card,
-            }}
-            contentFit="cover"
-          />
-        ))}
-      </View>
+      {activeTab === "saved" ? (
+        <ProfileSavedGrid items={savedItems} />
+      ) : (
+        <ProfileActivityList items={activityItems} />
+      )}
     </ScrollView>
   );
 }

@@ -1,6 +1,6 @@
 import { type Href, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
-import { useAuth, useUser } from "@clerk/clerk-expo";
+import { useUser } from "@clerk/clerk-expo";
 import { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -14,13 +14,16 @@ import {
 import { Icon } from "@/components/icon";
 import { radius, spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
+import { useSupabase, useClerkUserId } from "@/hooks/use-supabase";
+import { upsertProfile } from "@/services/profiles";
 import { useProfileStore } from "@/store/use-profile-store";
 
 export default function EditProfileScreen() {
   const { theme } = useTheme();
   const router = useRouter();
-  const { signOut } = useAuth();
   const { user } = useUser();
+  const client = useSupabase();
+  const clerkId = useClerkUserId();
   const profile = useProfileStore((state) => state.profile);
   const setProfile = useProfileStore((state) => state.setProfile);
 
@@ -66,6 +69,17 @@ export default function EditProfileScreen() {
       bio: bio.trim(),
     });
 
+    const nextProfile = {
+      fullName: fullName.trim(),
+      username: username.trim(),
+      classYear: classYear.trim(),
+      major: major.trim(),
+      university: university.trim(),
+      bio: bio.trim(),
+      avatarColor: profile.avatarColor,
+      postCount: profile.postCount,
+    };
+
     try {
       if (user) {
         const [firstName, ...rest] = fullName.trim().split(" ");
@@ -80,6 +94,10 @@ export default function EditProfileScreen() {
             bio: bio.trim(),
           },
         });
+      }
+
+      if (clerkId) {
+        await upsertProfile(client, clerkId, nextProfile);
       }
 
       if (process.env.EXPO_OS === "ios") {
@@ -201,18 +219,6 @@ export default function EditProfileScreen() {
         <Field label="Major" value={major} onChangeText={setMajor} />
         <Field label="University" value={university} onChangeText={setUniversity} />
         <Field label="Bio" value={bio} onChangeText={setBio} multiline />
-
-        <Pressable
-          onPress={async () => {
-            await signOut();
-            router.replace("/(auth)/login" as Href);
-          }}
-          style={{ alignItems: "center", paddingVertical: spacing.sm }}
-        >
-          <Text selectable style={{ color: theme.error, fontWeight: "600" }}>
-            Sign Out
-          </Text>
-        </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
   );

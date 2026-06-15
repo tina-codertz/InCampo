@@ -10,6 +10,7 @@ export type UserProfile = {
   university: string;
   bio: string;
   avatarColor: string;
+  postCount: number;
 };
 
 export const DEFAULT_PROFILE: UserProfile = {
@@ -20,6 +21,7 @@ export const DEFAULT_PROFILE: UserProfile = {
   university: "State University",
   bio: "Building cool things with code. ML enthusiast · Entrepreneurship Hub member · Photography lover",
   avatarColor: "#8B5CF6",
+  postCount: 27,
 };
 
 type ProfileState = {

@@ -1,27 +1,26 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { MOCK_CLUBS } from "@/constants/mock-data";
+import { fetchClubById, fetchClubs } from "@/services/clubs";
+import { useSupabase } from "@/hooks/use-supabase";
 import type { Club } from "@/types";
 
-async function fetchClubs(): Promise<Club[]> {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  return MOCK_CLUBS;
-}
-
 export function useClubs() {
+  const client = useSupabase();
+
   return useQuery({
     queryKey: ["clubs"],
-    queryFn: fetchClubs,
+    queryFn: () => fetchClubs(client),
     staleTime: 1000 * 60 * 5,
   });
 }
 
 export function useClub(id: string) {
+  const client = useSupabase();
+
   return useQuery({
     queryKey: ["clubs", id],
     queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      const club = MOCK_CLUBS.find((item) => item.id === id);
+      const club = await fetchClubById(client, id);
       if (!club) {
         throw new Error("Club not found");
       }

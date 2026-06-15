@@ -12,19 +12,23 @@ import { NotificationBadge } from "@/components/notification-bell";
 import { NotificationsSkeletonList } from "@/components/skeleton-loader";
 import { NOTIFICATION_FILTERS } from "@/constants/mock-data";
 import { radius, spacing } from "@/constants/theme";
+import { useClerkUserId, useSupabase } from "@/hooks/use-supabase";
+import { useTheme } from "@/hooks/use-theme";
+import { markAllNotificationsRead } from "@/services/notifications";
 import {
   filterNotifications,
   groupNotificationsBySection,
   useNotifications,
   useUnreadNotificationCount,
 } from "@/hooks/use-notifications";
-import { useTheme } from "@/hooks/use-theme";
 import { useNotificationsStore } from "@/store/use-notifications-store";
 
 export default function NotificationsScreen() {
   const { theme } = useTheme();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const client = useSupabase();
+  const clerkId = useClerkUserId();
   const { data: notifications = [], isLoading, isRefetching, refetch } =
     useNotifications();
   const unreadCount = useUnreadNotificationCount();
@@ -51,11 +55,14 @@ export default function NotificationsScreen() {
       .map((item) => item.id);
 
     markAllAsRead(unreadIds);
+    if (clerkId) {
+      void markAllNotificationsRead(client, clerkId);
+    }
 
     if (process.env.EXPO_OS === "ios") {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-  }, [isDeleted, isRead, markAllAsRead, notifications]);
+  }, [clerkId, client, isDeleted, isRead, markAllAsRead, notifications]);
 
   const handleRefresh = useCallback(async () => {
     if (process.env.EXPO_OS === "ios") {

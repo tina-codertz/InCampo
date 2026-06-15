@@ -33,6 +33,7 @@ export const ICON_MAP = {
   xmark: { ios: "xmark", android: "close" },
   checkmark: { ios: "checkmark", android: "check" },
   "sun.max": { ios: "sun.max", android: "light_mode" },
+  moon: { ios: "moon", android: "dark_mode" },
   gearshape: { ios: "gearshape", android: "settings" },
   pencil: { ios: "pencil", android: "edit" },
   graduationcap: { ios: "graduationcap", android: "school" },

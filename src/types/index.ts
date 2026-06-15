@@ -18,6 +18,7 @@ export type Announcement = {
   tags: string[];
   likes: number;
   comments: number;
+  imageUrl?: string;
 };
 
 export type EventItem = {
@@ -59,3 +60,23 @@ export type NotificationItem = {
 };
 
 export type TabRoute = "home" | "events" | "clubs" | "profile";
+
+export type ProfileActivityType = "like" | "bookmark" | "rsvp" | "join";
+
+export type ProfileActivityItem = {
+  id: string;
+  type: ProfileActivityType;
+  title: string;
+  subtitle: string;
+  timestamp: string;
+  imageUrl?: string;
+  href?: string;
+};
+
+export type ProfileSavedItem = {
+  id: string;
+  title: string;
+  subtitle: string;
+  imageUrl: string;
+  href: string;
+};

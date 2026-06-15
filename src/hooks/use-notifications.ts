@@ -1,19 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-import { MOCK_NOTIFICATIONS } from "@/constants/mock-data";
+import { fetchNotifications } from "@/services/notifications";
+import { useClerkUserId, useSupabase } from "@/hooks/use-supabase";
 import { useNotificationsStore } from "@/store/use-notifications-store";
 import type { NotificationItem } from "@/types";
 
-async function fetchNotifications(): Promise<NotificationItem[]> {
-  await new Promise((resolve) => setTimeout(resolve, 450));
-  return MOCK_NOTIFICATIONS;
-}
-
 export function useNotifications() {
+  const client = useSupabase();
+  const clerkId = useClerkUserId();
+
   return useQuery({
-    queryKey: ["notifications"],
-    queryFn: fetchNotifications,
+    queryKey: ["notifications", clerkId],
+    queryFn: () => fetchNotifications(client, clerkId),
     staleTime: 1000 * 60 * 3,
   });
 }

@@ -1,17 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { MOCK_ANNOUNCEMENTS } from "@/constants/mock-data";
+import { fetchAnnouncements } from "@/services/announcements";
+import { useSupabase } from "@/hooks/use-supabase";
 import type { Announcement } from "@/types";
 
-async function fetchAnnouncements(): Promise<Announcement[]> {
-  await new Promise((resolve) => setTimeout(resolve, 600));
-  return MOCK_ANNOUNCEMENTS;
-}
-
 export function useAnnouncements() {
+  const client = useSupabase();
+
   return useQuery({
     queryKey: ["announcements"],
-    queryFn: fetchAnnouncements,
+    queryFn: () => fetchAnnouncements(client),
     staleTime: 1000 * 60 * 5,
   });
 }

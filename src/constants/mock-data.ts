@@ -36,6 +36,8 @@ export const MOCK_ANNOUNCEMENTS: Announcement[] = [
     tags: ["Academic", "Library"],
     likes: 142,
     comments: 18,
+    imageUrl:
+      "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&q=80",
   },
   {
     id: "2",
@@ -50,6 +52,8 @@ export const MOCK_ANNOUNCEMENTS: Announcement[] = [
     tags: ["Academic", "Registration"],
     likes: 89,
     comments: 12,
+    imageUrl:
+      "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&q=80",
   },
   {
     id: "3",
@@ -64,6 +68,8 @@ export const MOCK_ANNOUNCEMENTS: Announcement[] = [
     tags: ["GreenCampus", "Social"],
     likes: 56,
     comments: 9,
+    imageUrl:
+      "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=600&q=80",
   },
   {
     id: "4",
