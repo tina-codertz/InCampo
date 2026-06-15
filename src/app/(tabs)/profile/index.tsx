@@ -9,11 +9,12 @@ import { StudentAvatar } from "@/components/student-avatar";
 import { radius, spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useAppStore } from "@/store/use-app-store";
+import { useClubsStore } from "@/store/use-clubs-store";
 import { useProfileStore } from "@/store/use-profile-store";
 
-const STATS = [
+const STATS_BASE = [
   { label: "Posts", value: "27", icon: "square.grid.2x2", color: "#8B5CF6" },
-  { label: "Clubs", value: "2", icon: "person.2", color: "#34D399" },
+  { label: "Clubs", icon: "person.2", color: "#34D399" },
   { label: "Saved", value: "12", icon: "bookmark", color: "#60A5FA" },
 ] as const;
 
@@ -35,7 +36,14 @@ export default function ProfileScreen() {
   const toggleColorScheme = useAppStore((state) => state.toggleColorScheme);
   const profile = useProfileStore((state) => state.profile);
   const getInitials = useProfileStore((state) => state.getInitials);
+  const joinedClubCount = useClubsStore((state) => state.getJoinedCount());
   const [activeTab, setActiveTab] = useState<"saved" | "activity">("saved");
+
+  const stats = STATS_BASE.map((stat) =>
+    stat.label === "Clubs"
+      ? { ...stat, value: String(joinedClubCount) }
+      : stat
+  );
 
   function openEditProfile() {
     if (process.env.EXPO_OS === "ios") {
@@ -174,7 +182,7 @@ export default function ProfileScreen() {
         </Text>
 
         <View style={{ flexDirection: "row", gap: 24 }}>
-          {STATS.map((stat) => (
+          {stats.map((stat) => (
             <View key={stat.label} style={{ alignItems: "center", gap: 2 }}>
               <Text
                 selectable

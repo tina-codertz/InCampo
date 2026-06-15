@@ -40,6 +40,12 @@ function RootNavigator() {
             animation: "slide_from_right",
           }}
         />
+        <Stack.Screen
+          name="club/[id]"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
       </Stack>
     </>
   );

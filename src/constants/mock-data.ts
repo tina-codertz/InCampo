@@ -176,6 +176,10 @@ export const MOCK_CLUBS: Club[] = [
     name: "AI & Machine Learning Society",
     category: "Tech",
     members: 312,
+    description:
+      "Weekly paper readings, hack nights, and guest lectures from industry researchers. Open to all skill levels.",
+    meetingTime: "Wednesdays · 6:00 PM",
+    location: "CS Building, Room 204",
     imageUrl:
       "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80",
     featured: true,
@@ -185,19 +189,62 @@ export const MOCK_CLUBS: Club[] = [
     name: "Entrepreneurship Hub",
     category: "Academic",
     members: 228,
+    description:
+      "Connect with founders, mentors, and investors. Monthly pitch nights and startup studio sessions.",
+    meetingTime: "Thursdays · 5:30 PM",
+    location: "Innovation Lab",
     imageUrl:
       "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80",
     featured: true,
-    isJoined: true,
   },
   {
     id: "3",
     name: "Esports & Gaming Society",
     category: "Social",
     members: 445,
+    description:
+      "Competitive teams, casual game nights, and watch parties for major tournaments across campus.",
+    meetingTime: "Fridays · 7:00 PM",
+    location: "Student Union Game Lounge",
     imageUrl:
       "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80",
     featured: true,
+  },
+  {
+    id: "4",
+    name: "Campus Photography Club",
+    category: "Arts",
+    members: 156,
+    description:
+      "Photo walks, editing workshops, and semester gallery showcases for students who love visual storytelling.",
+    meetingTime: "Saturdays · 10:00 AM",
+    location: "Arts Center Studio B",
+    imageUrl:
+      "https://images.unsplash.com/photo-1452587925148-ce544e77eee7?w=800&q=80",
+  },
+  {
+    id: "5",
+    name: "Intramural Soccer League",
+    category: "Sports",
+    members: 189,
+    description:
+      "Casual and competitive soccer teams with weekly matches and end-of-season tournament playoffs.",
+    meetingTime: "Tuesdays · 4:30 PM",
+    location: "North Field",
+    imageUrl:
+      "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80",
+  },
+  {
+    id: "6",
+    name: "Debate & Public Speaking Society",
+    category: "Academic",
+    members: 94,
+    description:
+      "Practice argumentation, compete in regional tournaments, and build confidence speaking in front of crowds.",
+    meetingTime: "Mondays · 6:30 PM",
+    location: "Humanities Hall 112",
+    imageUrl:
+      "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=800&q=80",
   },
 ];
 

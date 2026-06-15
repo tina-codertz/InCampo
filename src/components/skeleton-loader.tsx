@@ -140,3 +140,44 @@ export function EventsSkeletonList({ count = 3 }: { count?: number }) {
     </>
   );
 }
+
+export function ClubCardSkeleton() {
+  const { theme } = useTheme();
+  const opacity = useSharedValue(0.45);
+
+  useEffect(() => {
+    opacity.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 700 }),
+        withTiming(0.45, { duration: 700 })
+      ),
+      -1,
+      false
+    );
+  }, [opacity]);
+
+  return (
+    <View
+      style={{
+        borderRadius: radius.card,
+        overflow: "hidden",
+        borderWidth: 1,
+        borderColor: theme.border,
+        height: 180,
+        backgroundColor: theme.surface,
+      }}
+    >
+      <SkeletonBlock width="100%" height={180} opacity={opacity} />
+    </View>
+  );
+}
+
+export function ClubsSkeletonList({ count = 3 }: { count?: number }) {
+  return (
+    <>
+      {Array.from({ length: count }).map((_, index) => (
+        <ClubCardSkeleton key={`club-skeleton-${index}`} />
+      ))}
+    </>
+  );
+}

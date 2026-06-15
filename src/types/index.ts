@@ -40,8 +40,10 @@ export type Club = {
   category: string;
   members: number;
   imageUrl: string;
+  description: string;
+  meetingTime?: string;
+  location?: string;
   featured?: boolean;
-  isJoined?: boolean;
 };
 
 export type NotificationType = "like" | "reply" | "event" | "club";
