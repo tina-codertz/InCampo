@@ -181,3 +181,50 @@ export function ClubsSkeletonList({ count = 3 }: { count?: number }) {
     </>
   );
 }
+
+export function NotificationItemSkeleton() {
+  const { theme } = useTheme();
+  const opacity = useSharedValue(0.45);
+
+  useEffect(() => {
+    opacity.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 700 }),
+        withTiming(0.45, { duration: 700 })
+      ),
+      -1,
+      false
+    );
+  }, [opacity]);
+
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        gap: 12,
+        backgroundColor: theme.surface,
+        borderRadius: radius.card,
+        borderWidth: 1,
+        borderColor: theme.border,
+        padding: spacing.sm,
+      }}
+    >
+      <SkeletonBlock width={44} height={44} opacity={opacity} />
+      <View style={{ flex: 1, gap: 8 }}>
+        <SkeletonBlock width="90%" height={14} opacity={opacity} />
+        <SkeletonBlock width="70%" height={14} opacity={opacity} />
+        <SkeletonBlock width="30%" height={12} opacity={opacity} />
+      </View>
+    </View>
+  );
+}
+
+export function NotificationsSkeletonList({ count = 4 }: { count?: number }) {
+  return (
+    <>
+      {Array.from({ length: count }).map((_, index) => (
+        <NotificationItemSkeleton key={`notification-skeleton-${index}`} />
+      ))}
+    </>
+  );
+}

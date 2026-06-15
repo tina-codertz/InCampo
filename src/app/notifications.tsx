@@ -1,136 +1,69 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
-import { useMemo, useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import { useCallback, useMemo, useState } from "react";
+import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 
+import { EmptyState } from "@/components/empty-state";
 import { FilterChips } from "@/components/filter-chips";
 import { Icon } from "@/components/icon";
+import { NotificationItemCard } from "@/components/notification-item";
 import { NotificationBadge } from "@/components/notification-bell";
-import {
-  MOCK_NOTIFICATIONS,
-  NOTIFICATION_FILTERS,
-} from "@/constants/mock-data";
+import { NotificationsSkeletonList } from "@/components/skeleton-loader";
+import { NOTIFICATION_FILTERS } from "@/constants/mock-data";
 import { radius, spacing } from "@/constants/theme";
+import {
+  filterNotifications,
+  groupNotificationsBySection,
+  useNotifications,
+  useUnreadNotificationCount,
+} from "@/hooks/use-notifications";
 import { useTheme } from "@/hooks/use-theme";
-import { useAppStore } from "@/store/use-app-store";
-import type { NotificationItem, NotificationType } from "@/types";
-
-const ICON_MAP: Record<
-  NotificationType,
-  { icon: string; color: string; background: string }
-> = {
-  like: {
-    icon: "heart.fill",
-    color: "#EF4444",
-    background: "rgba(239, 68, 68, 0.15)",
-  },
-  reply: {
-    icon: "bubble.left.fill",
-    color: "#3B82F6",
-    background: "rgba(59, 130, 246, 0.15)",
-  },
-  event: {
-    icon: "calendar",
-    color: "#FBBF24",
-    background: "rgba(251, 191, 36, 0.15)",
-  },
-  club: {
-    icon: "person.2.fill",
-    color: "#34D399",
-    background: "rgba(52, 211, 153, 0.15)",
-  },
-};
-
-function NotificationCard({
-  item,
-  index,
-}: {
-  item: NotificationItem;
-  index: number;
-}) {
-  const { theme } = useTheme();
-  const icon = ICON_MAP[item.type];
-
-  return (
-    <Animated.View
-      entering={FadeInDown.delay(index * 60).springify()}
-      style={{
-        flexDirection: "row",
-        gap: 12,
-        backgroundColor: theme.surface,
-        borderRadius: radius.card,
-        borderWidth: 1,
-        borderColor: theme.border,
-        padding: spacing.sm,
-      }}
-    >
-      <View
-        style={{
-          width: 44,
-          height: 44,
-          borderRadius: 22,
-          backgroundColor: icon.background,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Icon name={icon.icon} size={20} color={icon.color} />
-      </View>
-
-      <View style={{ flex: 1, gap: 6 }}>
-        <Text selectable style={{ color: theme.textPrimary, fontSize: 14, lineHeight: 20 }}>
-          <Text style={{ fontWeight: "700" }}>{item.title}</Text> {item.body}
-        </Text>
-        <Text selectable style={{ color: theme.textMuted, fontSize: 12 }}>
-          {item.timestamp}
-        </Text>
-      </View>
-
-      <View style={{ alignItems: "flex-end", gap: 12 }}>
-        {!item.isRead ? (
-          <View
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: theme.primary,
-            }}
-          />
-        ) : null}
-        <Pressable hitSlop={8}>
-          <Icon name="trash" size={16} color={theme.textMuted} />
-        </Pressable>
-      </View>
-    </Animated.View>
-  );
-}
+import { useNotificationsStore } from "@/store/use-notifications-store";
 
 export default function NotificationsScreen() {
   const { theme } = useTheme();
   const router = useRouter();
-  const unreadCount = useAppStore((state) => state.unreadNotificationCount);
-  const markAllRead = useAppStore((state) => state.markAllNotificationsRead);
+  const queryClient = useQueryClient();
+  const { data: notifications = [], isLoading, isRefetching, refetch } =
+    useNotifications();
+  const unreadCount = useUnreadNotificationCount();
+  const markAllAsRead = useNotificationsStore((state) => state.markAllAsRead);
+  const isRead = useNotificationsStore((state) => state.isRead);
+  const isDeleted = useNotificationsStore((state) => state.isDeleted);
+
   const [filter, setFilter] =
     useState<(typeof NOTIFICATION_FILTERS)[number]>("All");
 
-  const filteredNotifications = useMemo(() => {
-    if (filter === "All") return MOCK_NOTIFICATIONS;
-    if (filter === "Unread") return MOCK_NOTIFICATIONS.filter((n) => !n.isRead);
-    if (filter === "Events")
-      return MOCK_NOTIFICATIONS.filter((n) => n.type === "event");
-    return MOCK_NOTIFICATIONS.filter((n) => n.type === "club");
-  }, [filter]);
+  const filteredNotifications = useMemo(
+    () => filterNotifications(notifications, filter, isRead, isDeleted),
+    [notifications, filter, isRead, isDeleted]
+  );
 
-  const sections = useMemo(() => {
-    const grouped = new Map<string, NotificationItem[]>();
-    for (const item of filteredNotifications) {
-      const list = grouped.get(item.section) ?? [];
-      list.push(item);
-      grouped.set(item.section, list);
+  const sections = useMemo(
+    () => groupNotificationsBySection(filteredNotifications),
+    [filteredNotifications]
+  );
+
+  const handleReadAll = useCallback(() => {
+    const unreadIds = notifications
+      .filter((item) => !isDeleted(item.id) && !isRead(item.id, item.isRead))
+      .map((item) => item.id);
+
+    markAllAsRead(unreadIds);
+
+    if (process.env.EXPO_OS === "ios") {
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-    return Array.from(grouped.entries());
-  }, [filteredNotifications]);
+  }, [isDeleted, isRead, markAllAsRead, notifications]);
+
+  const handleRefresh = useCallback(async () => {
+    if (process.env.EXPO_OS === "ios") {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    await queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    await refetch();
+  }, [queryClient, refetch]);
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
@@ -171,12 +104,8 @@ export default function NotificationsScreen() {
         </View>
 
         <Pressable
-          onPress={() => {
-            if (process.env.EXPO_OS === "ios") {
-              void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            }
-            markAllRead();
-          }}
+          onPress={handleReadAll}
+          disabled={unreadCount === 0}
           style={{
             flexDirection: "row",
             alignItems: "center",
@@ -187,6 +116,7 @@ export default function NotificationsScreen() {
             borderWidth: 1,
             borderColor: theme.border,
             backgroundColor: theme.surface,
+            opacity: unreadCount === 0 ? 0.5 : 1,
           }}
         >
           <Icon name="checkmark" size={14} color={theme.textSecondary} />
@@ -201,7 +131,15 @@ export default function NotificationsScreen() {
         contentContainerStyle={{
           padding: spacing.sm,
           gap: spacing.sm,
+          flexGrow: 1,
         }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={() => void handleRefresh()}
+            tintColor={theme.primary}
+          />
+        }
       >
         <FilterChips
           options={NOTIFICATION_FILTERS}
@@ -209,24 +147,42 @@ export default function NotificationsScreen() {
           onSelect={setFilter}
         />
 
-        {sections.map(([section, items]) => (
-          <View key={section} style={{ gap: spacing.xs }}>
-            <Text
-              selectable
-              style={{
-                color: theme.textMuted,
-                fontSize: 12,
-                fontWeight: "600",
-                letterSpacing: 1,
-              }}
-            >
-              {section}
-            </Text>
-            {items.map((item, index) => (
-              <NotificationCard key={item.id} item={item} index={index} />
-            ))}
-          </View>
-        ))}
+        {isLoading ? (
+          <NotificationsSkeletonList count={4} />
+        ) : sections.length === 0 ? (
+          <EmptyState
+            title={
+              filter === "Unread"
+                ? "You're all caught up"
+                : "No notifications found"
+            }
+            description={
+              filter === "Unread"
+                ? "No unread notifications right now. Check back later for campus updates."
+                : "Try a different filter to see more notifications."
+            }
+            icon="bell"
+          />
+        ) : (
+          sections.map(([section, items]) => (
+            <View key={section} style={{ gap: spacing.xs }}>
+              <Text
+                selectable
+                style={{
+                  color: theme.textMuted,
+                  fontSize: 12,
+                  fontWeight: "600",
+                  letterSpacing: 1,
+                }}
+              >
+                {section}
+              </Text>
+              {items.map((item, index) => (
+                <NotificationItemCard key={item.id} item={item} index={index} />
+              ))}
+            </View>
+          ))
+        )}
       </ScrollView>
     </View>
   );

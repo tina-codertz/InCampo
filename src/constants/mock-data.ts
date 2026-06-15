@@ -294,6 +294,33 @@ export const MOCK_NOTIFICATIONS: NotificationItem[] = [
     isRead: true,
     section: "YESTERDAY",
   },
+  {
+    id: "6",
+    type: "like",
+    title: "Priya Nair",
+    body: "liked your post about Spring Registration",
+    timestamp: "Yesterday",
+    isRead: true,
+    section: "YESTERDAY",
+  },
+  {
+    id: "7",
+    type: "club",
+    title: "AI & Machine Learning Society",
+    body: "shared notes from this week's paper reading session",
+    timestamp: "Mon",
+    isRead: true,
+    section: "THIS WEEK",
+  },
+  {
+    id: "8",
+    type: "reply",
+    title: "James Ortiz",
+    body: 'replied to your comment: "See you at the hackathon!"',
+    timestamp: "Sun",
+    isRead: true,
+    section: "THIS WEEK",
+  },
 ];
 
 export const NOTIFICATION_FILTERS = ["All", "Unread", "Events", "Clubs"] as const;

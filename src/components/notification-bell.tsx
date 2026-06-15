@@ -3,8 +3,8 @@ import * as Haptics from "expo-haptics";
 import { Pressable, Text, View } from "react-native";
 
 import { Icon } from "@/components/icon";
+import { useUnreadNotificationCount } from "@/hooks/use-notifications";
 import { useTheme } from "@/hooks/use-theme";
-import { useAppStore } from "@/store/use-app-store";
 
 type NotificationBellProps = {
   size?: number;
@@ -12,7 +12,7 @@ type NotificationBellProps = {
 
 export function NotificationBell({ size = 22 }: NotificationBellProps) {
   const { theme } = useTheme();
-  const unreadCount = useAppStore((state) => state.unreadNotificationCount);
+  const unreadCount = useUnreadNotificationCount();
 
   return (
     <Link href={"/notifications" as Href} asChild>
