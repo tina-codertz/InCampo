@@ -2,6 +2,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+import { EMPTY_PROFILE } from "@/lib/profile-from-auth";
+
 export type UserProfile = {
   fullName: string;
   username: string;
@@ -13,21 +15,11 @@ export type UserProfile = {
   postCount: number;
 };
 
-export const DEFAULT_PROFILE: UserProfile = {
-  fullName: "Alex Rivera",
-  username: "alex.rivera",
-  classYear: "CS '27",
-  major: "Computer Science",
-  university: "State University",
-  bio: "Building cool things with code. ML enthusiast · Entrepreneurship Hub member · Photography lover",
-  avatarColor: "#8B5CF6",
-  postCount: 27,
-};
-
 type ProfileState = {
   profile: UserProfile;
   isEditing: boolean;
   setProfile: (profile: Partial<UserProfile>) => void;
+  replaceProfile: (profile: UserProfile) => void;
   resetProfile: () => void;
   setIsEditing: (isEditing: boolean) => void;
   getInitials: () => string;
@@ -45,13 +37,14 @@ function getInitialsFromName(fullName: string) {
 export const useProfileStore = create<ProfileState>()(
   persist(
     (set, get) => ({
-      profile: DEFAULT_PROFILE,
+      profile: EMPTY_PROFILE,
       isEditing: false,
       setProfile: (updates) =>
         set((state) => ({
           profile: { ...state.profile, ...updates },
         })),
-      resetProfile: () => set({ profile: DEFAULT_PROFILE }),
+      replaceProfile: (profile) => set({ profile }),
+      resetProfile: () => set({ profile: EMPTY_PROFILE }),
       setIsEditing: (isEditing) => set({ isEditing }),
       getInitials: () => getInitialsFromName(get().profile.fullName),
     }),

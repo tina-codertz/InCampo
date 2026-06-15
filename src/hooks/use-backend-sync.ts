@@ -5,27 +5,28 @@ import { isSupabaseConfigured } from "@/lib/supabase";
 import { useSupabase } from "@/hooks/use-supabase";
 import { useAuth } from "@/providers/auth-provider";
 import { fetchEngagement } from "@/services/engagement";
-import { ensureProfile } from "@/services/profiles";
+import { syncProfile } from "@/services/profiles";
 import { useClubsStore } from "@/store/use-clubs-store";
 import { useEventsStore } from "@/store/use-events-store";
 import { useFeedStore } from "@/store/use-feed-store";
 import { useProfileStore } from "@/store/use-profile-store";
 
 export function useBackendSync() {
-  const { isSignedIn, userId } = useAuth();
+  const { isSignedIn, userId, user } = useAuth();
   const client = useSupabase();
   const hydrateFeed = useFeedStore((state) => state.hydrate);
   const hydrateEvents = useEventsStore((state) => state.hydrate);
   const hydrateClubs = useClubsStore((state) => state.hydrate);
-  const setProfile = useProfileStore((state) => state.setProfile);
+  const replaceProfile = useProfileStore((state) => state.replaceProfile);
 
   useEffect(() => {
-    if (!isSignedIn || !userId || !isSupabaseConfigured()) {
+    if (!isSignedIn || !userId || !user || !isSupabaseConfigured()) {
       setEngagementContext(null);
       return;
     }
 
     const activeUserId = userId;
+    const activeUser = user;
     setEngagementContext({ userId: activeUserId, client });
 
     let cancelled = false;
@@ -34,9 +35,14 @@ export function useBackendSync() {
       const localProfile = useProfileStore.getState().profile;
 
       try {
-        const remoteProfile = await ensureProfile(client, activeUserId, localProfile);
-        if (!cancelled && remoteProfile) {
-          setProfile(remoteProfile);
+        const remoteProfile = await syncProfile(
+          client,
+          activeUserId,
+          activeUser,
+          localProfile
+        );
+        if (!cancelled) {
+          replaceProfile(remoteProfile);
         }
       } catch {
         // Profile sync is best-effort during auth bootstrap.
@@ -71,7 +77,8 @@ export function useBackendSync() {
     hydrateEvents,
     hydrateFeed,
     isSignedIn,
-    setProfile,
+    replaceProfile,
+    user,
     userId,
   ]);
 }

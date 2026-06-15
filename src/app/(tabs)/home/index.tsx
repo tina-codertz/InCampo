@@ -17,15 +17,18 @@ import { FeedSkeletonList } from "@/components/skeleton-loader";
 import { StudentAvatar, TagPill } from "@/components/student-avatar";
 import { MOCK_STUDENTS, TRENDING_TAGS } from "@/constants/mock-data";
 import { radius, spacing } from "@/constants/theme";
+import { getProfileFirstName } from "@/lib/profile-from-auth";
 import {
   filterAnnouncements,
   useAnnouncements,
 } from "@/hooks/use-announcements";
 import { useTheme } from "@/hooks/use-theme";
+import { useAuth } from "@/providers/auth-provider";
 import { useProfileStore } from "@/store/use-profile-store";
 
 export default function HomeScreen() {
   const { theme } = useTheme();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const profile = useProfileStore((state) => state.profile);
   const { data: announcements = [], isLoading, isRefetching, refetch } =
@@ -39,7 +42,7 @@ export default function HomeScreen() {
     [announcements, searchQuery, selectedTag]
   );
 
-  const firstName = profile.fullName.split(" ")[0] ?? "there";
+  const firstName = getProfileFirstName(profile, user?.email);
 
   const handleRefresh = useCallback(async () => {
     if (process.env.EXPO_OS === "ios") {

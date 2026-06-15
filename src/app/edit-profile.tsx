@@ -14,6 +14,7 @@ import { CloseButton } from "@/components/icon-button";
 import { radius, spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useSupabase, useUserId } from "@/hooks/use-supabase";
+import { supabase } from "@/lib/supabase";
 import { upsertProfile } from "@/services/profiles";
 import { useProfileStore } from "@/store/use-profile-store";
 
@@ -23,7 +24,7 @@ export default function EditProfileScreen() {
   const client = useSupabase();
   const userId = useUserId();
   const profile = useProfileStore((state) => state.profile);
-  const setProfile = useProfileStore((state) => state.setProfile);
+  const replaceProfile = useProfileStore((state) => state.replaceProfile);
 
   const [fullName, setFullName] = useState(profile.fullName);
   const [username, setUsername] = useState(profile.username);
@@ -47,12 +48,22 @@ export default function EditProfileScreen() {
       postCount: profile.postCount,
     };
 
-    setProfile(nextProfile);
-
     try {
       if (userId) {
         await upsertProfile(client, userId, nextProfile);
+        await supabase.auth.updateUser({
+          data: {
+            full_name: nextProfile.fullName,
+            username: nextProfile.username,
+            class_year: nextProfile.classYear,
+            major: nextProfile.major,
+            university: nextProfile.university,
+            bio: nextProfile.bio,
+          },
+        });
       }
+
+      replaceProfile(nextProfile);
 
       if (process.env.EXPO_OS === "ios") {
         void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

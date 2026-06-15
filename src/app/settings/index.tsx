@@ -9,6 +9,7 @@ import { radius, spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/providers/auth-provider";
 import { useAppStore } from "@/store/use-app-store";
+import { useProfileStore } from "@/store/use-profile-store";
 import { useSettingsStore } from "@/store/use-settings-store";
 
 type SettingsRowProps = {
@@ -156,6 +157,7 @@ export default function SettingsScreen() {
   const { theme, colorScheme } = useTheme();
   const router = useRouter();
   const { signOut } = useAuth();
+  const resetProfile = useProfileStore((state) => state.resetProfile);
   const toggleColorScheme = useAppStore((state) => state.toggleColorScheme);
   const notificationPreferences = useSettingsStore(
     (state) => state.notificationPreferences
@@ -268,6 +270,7 @@ export default function SettingsScreen() {
           showChevron={false}
           onPress={async () => {
             await signOut();
+            resetProfile();
             router.replace("/(auth)/login" as Href);
           }}
         />

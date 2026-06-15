@@ -1,3 +1,10 @@
+import type { User } from "@supabase/supabase-js";
+
+import {
+  isDemoProfile,
+  mergeProfiles,
+  profileFromAuthUser,
+} from "@/lib/profile-from-auth";
 import { mapProfile, profileToRow } from "@/lib/mappers";
 import type { AppSupabaseClient } from "@/lib/supabase";
 import type { UserProfile } from "@/store/use-profile-store";
@@ -35,16 +42,22 @@ export async function upsertProfile(
   }
 }
 
-export async function ensureProfile(
+export async function syncProfile(
   client: AppSupabaseClient,
   userId: string,
-  defaults: UserProfile
-) {
+  user: User,
+  localProfile: UserProfile
+): Promise<UserProfile> {
+  const authProfile = profileFromAuthUser(user);
   const existing = await fetchProfile(client, userId);
-  if (existing) {
-    return existing;
+
+  if (existing && !isDemoProfile(existing)) {
+    return mergeProfiles(authProfile, existing);
   }
 
-  await upsertProfile(client, userId, defaults);
-  return defaults;
+  const safeLocal = isDemoProfile(localProfile) ? authProfile : localProfile;
+  const nextProfile = mergeProfiles(authProfile, safeLocal);
+
+  await upsertProfile(client, userId, nextProfile);
+  return nextProfile;
 }
