@@ -13,7 +13,7 @@ import Animated, {
 
 import { Icon } from "@/components/icon";
 import { radius, spacing } from "@/constants/theme";
-import { useClerkUserId, useSupabase } from "@/hooks/use-supabase";
+import { useSupabase, useUserId } from "@/hooks/use-supabase";
 import { useTheme } from "@/hooks/use-theme";
 import {
   markAllNotificationsRead,
@@ -58,7 +58,7 @@ type NotificationItemCardProps = {
 export function NotificationItemCard({ item, index }: NotificationItemCardProps) {
   const { theme } = useTheme();
   const client = useSupabase();
-  const clerkId = useClerkUserId();
+  const userId = useUserId();
   const icon = ICON_MAP[item.type];
   const translateX = useSharedValue(0);
 
@@ -73,14 +73,14 @@ export function NotificationItemCard({ item, index }: NotificationItemCardProps)
   const handlePress = useCallback(() => {
     if (!isRead) {
       markAsRead(item.id);
-      if (clerkId) {
-        void markNotificationRead(client, clerkId, item.id);
+      if (userId) {
+        void markNotificationRead(client, userId, item.id);
       }
       if (process.env.EXPO_OS === "ios") {
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       }
     }
-  }, [clerkId, client, isRead, item.id, markAsRead]);
+  }, [userId, client, isRead, item.id, markAsRead]);
 
   const handleDelete = useCallback(() => {
     deleteNotification(item.id);

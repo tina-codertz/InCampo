@@ -37,7 +37,7 @@ export const useEventsStore = create<EventsState>()(
 
         const context = getEngagementContext();
         if (context) {
-          void syncRsvp(context.client, context.clerkId, id, nextGoing);
+          void syncRsvp(context.client, context.userId, id, nextGoing);
         }
       },
       isGoing: (id) => get().goingIds.includes(id),

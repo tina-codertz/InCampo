@@ -1,12 +1,13 @@
-import { useAuth } from "@clerk/clerk-expo";
 import { type Href, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { type ReactNode } from "react";
 import { Pressable, ScrollView, Switch, Text, View } from "react-native";
 
+import { CloseButton } from "@/components/icon-button";
 import { Icon } from "@/components/icon";
 import { radius, spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
+import { useAuth } from "@/providers/auth-provider";
 import { useAppStore } from "@/store/use-app-store";
 import { useSettingsStore } from "@/store/use-settings-store";
 
@@ -176,29 +177,14 @@ export default function SettingsScreen() {
           justifyContent: "space-between",
         }}
       >
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={8}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            backgroundColor: theme.surface,
-            alignItems: "center",
-            justifyContent: "center",
-            borderWidth: 1,
-            borderColor: theme.border,
-          }}
-        >
-          <Icon name="xmark" size={14} color={theme.textPrimary} />
-        </Pressable>
+        <CloseButton onPress={() => router.back()} />
         <Text
           selectable
           style={{ color: theme.textPrimary, fontSize: 18, fontWeight: "700" }}
         >
           Settings
         </Text>
-        <View style={{ width: 36 }} />
+        <View style={{ width: 44 }} />
       </View>
 
       <SettingsSection title="ACCOUNT">

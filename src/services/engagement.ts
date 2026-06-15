@@ -3,20 +3,17 @@ import type { EngagementState } from "@/types/database";
 
 export async function fetchEngagement(
   client: AppSupabaseClient,
-  clerkId: string
+  userId: string
 ): Promise<EngagementState> {
   const [likes, bookmarks, rsvps, members] = await Promise.all([
-    client
-      .from("announcement_likes")
-      .select("announcement_id")
-      .eq("clerk_id", clerkId),
+    client.from("announcement_likes").select("announcement_id").eq("user_id", userId),
     client
       .from("bookmarks")
       .select("content_id")
-      .eq("clerk_id", clerkId)
+      .eq("user_id", userId)
       .eq("content_type", "announcement"),
-    client.from("event_rsvps").select("event_id").eq("clerk_id", clerkId),
-    client.from("club_members").select("club_id").eq("clerk_id", clerkId),
+    client.from("event_rsvps").select("event_id").eq("user_id", userId),
+    client.from("club_members").select("club_id").eq("user_id", userId),
   ]);
 
   return {
@@ -29,13 +26,13 @@ export async function fetchEngagement(
 
 export async function syncLike(
   client: AppSupabaseClient,
-  clerkId: string,
+  userId: string,
   announcementId: string,
   liked: boolean
 ) {
   if (liked) {
     await client.from("announcement_likes").upsert({
-      clerk_id: clerkId,
+      user_id: userId,
       announcement_id: announcementId,
     });
     return;
@@ -44,19 +41,19 @@ export async function syncLike(
   await client
     .from("announcement_likes")
     .delete()
-    .eq("clerk_id", clerkId)
+    .eq("user_id", userId)
     .eq("announcement_id", announcementId);
 }
 
 export async function syncBookmark(
   client: AppSupabaseClient,
-  clerkId: string,
+  userId: string,
   announcementId: string,
   bookmarked: boolean
 ) {
   if (bookmarked) {
     await client.from("bookmarks").upsert({
-      clerk_id: clerkId,
+      user_id: userId,
       content_type: "announcement",
       content_id: announcementId,
     });
@@ -66,20 +63,20 @@ export async function syncBookmark(
   await client
     .from("bookmarks")
     .delete()
-    .eq("clerk_id", clerkId)
+    .eq("user_id", userId)
     .eq("content_type", "announcement")
     .eq("content_id", announcementId);
 }
 
 export async function syncRsvp(
   client: AppSupabaseClient,
-  clerkId: string,
+  userId: string,
   eventId: string,
   going: boolean
 ) {
   if (going) {
     await client.from("event_rsvps").upsert({
-      clerk_id: clerkId,
+      user_id: userId,
       event_id: eventId,
     });
     return;
@@ -88,19 +85,19 @@ export async function syncRsvp(
   await client
     .from("event_rsvps")
     .delete()
-    .eq("clerk_id", clerkId)
+    .eq("user_id", userId)
     .eq("event_id", eventId);
 }
 
 export async function syncClubJoin(
   client: AppSupabaseClient,
-  clerkId: string,
+  userId: string,
   clubId: string,
   joined: boolean
 ) {
   if (joined) {
     await client.from("club_members").upsert({
-      clerk_id: clerkId,
+      user_id: userId,
       club_id: clubId,
     });
     return;
@@ -109,6 +106,6 @@ export async function syncClubJoin(
   await client
     .from("club_members")
     .delete()
-    .eq("clerk_id", clerkId)
+    .eq("user_id", userId)
     .eq("club_id", clubId);
 }

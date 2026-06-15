@@ -4,12 +4,12 @@ import type { UserProfile } from "@/store/use-profile-store";
 
 export async function fetchProfile(
   client: AppSupabaseClient,
-  clerkId: string
+  userId: string
 ): Promise<UserProfile | null> {
   const { data, error } = await client
     .from("profiles")
     .select("*")
-    .eq("clerk_id", clerkId)
+    .eq("user_id", userId)
     .maybeSingle();
 
   if (error || !data) {
@@ -21,13 +21,13 @@ export async function fetchProfile(
 
 export async function upsertProfile(
   client: AppSupabaseClient,
-  clerkId: string,
+  userId: string,
   profile: UserProfile
 ) {
-  const row = profileToRow(clerkId, profile);
+  const row = profileToRow(userId, profile);
 
   const { error } = await client.from("profiles").upsert(row, {
-    onConflict: "clerk_id",
+    onConflict: "user_id",
   });
 
   if (error) {
@@ -37,14 +37,14 @@ export async function upsertProfile(
 
 export async function ensureProfile(
   client: AppSupabaseClient,
-  clerkId: string,
+  userId: string,
   defaults: UserProfile
 ) {
-  const existing = await fetchProfile(client, clerkId);
+  const existing = await fetchProfile(client, userId);
   if (existing) {
     return existing;
   }
 
-  await upsertProfile(client, clerkId, defaults);
+  await upsertProfile(client, userId, defaults);
   return defaults;
 }

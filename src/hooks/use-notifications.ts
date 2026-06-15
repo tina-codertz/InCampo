@@ -2,17 +2,17 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import { fetchNotifications } from "@/services/notifications";
-import { useClerkUserId, useSupabase } from "@/hooks/use-supabase";
+import { useSupabase, useUserId } from "@/hooks/use-supabase";
 import { useNotificationsStore } from "@/store/use-notifications-store";
 import type { NotificationItem } from "@/types";
 
 export function useNotifications() {
   const client = useSupabase();
-  const clerkId = useClerkUserId();
+  const userId = useUserId();
 
   return useQuery({
-    queryKey: ["notifications", clerkId],
-    queryFn: () => fetchNotifications(client, clerkId),
+    queryKey: ["notifications", userId],
+    queryFn: () => fetchNotifications(client, userId),
     staleTime: 1000 * 60 * 3,
   });
 }

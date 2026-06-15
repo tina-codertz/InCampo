@@ -1,5 +1,5 @@
 export type ProfileRow = {
-  clerk_id: string;
+  user_id: string;
   full_name: string;
   username: string;
   class_year: string;
@@ -58,7 +58,7 @@ export type ClubRow = {
 
 export type NotificationRow = {
   id: string;
-  clerk_id: string | null;
+  user_id: string | null;
   type: "like" | "reply" | "event" | "club";
   title: string;
   body: string;
@@ -68,26 +68,26 @@ export type NotificationRow = {
 };
 
 export type AnnouncementLikeRow = {
-  clerk_id: string;
+  user_id: string;
   announcement_id: string;
   created_at: string;
 };
 
 export type BookmarkRow = {
-  clerk_id: string;
+  user_id: string;
   content_type: "announcement";
   content_id: string;
   created_at: string;
 };
 
 export type EventRsvpRow = {
-  clerk_id: string;
+  user_id: string;
   event_id: string;
   created_at: string;
 };
 
 export type ClubMemberRow = {
-  clerk_id: string;
+  user_id: string;
   club_id: string;
   created_at: string;
 };
@@ -108,7 +108,7 @@ export type Database = {
           created_at?: string;
           updated_at?: string;
         };
-        Update: Partial<Omit<ProfileRow, "clerk_id">>;
+        Update: Partial<Omit<ProfileRow, "user_id">>;
         Relationships: [];
       };
       announcements: {

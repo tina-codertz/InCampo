@@ -1,4 +1,4 @@
-import { useOAuth, useSignIn, useSignUp } from "@clerk/clerk-expo";
+import { makeRedirectUri } from "expo-auth-session";
 import { type Href, useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import * as WebBrowser from "expo-web-browser";
@@ -16,23 +16,25 @@ import {
 import { Icon } from "@/components/icon";
 import { radius, spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
+import { createSessionFromUrl } from "@/lib/auth-session";
+import { supabase } from "@/lib/supabase";
 
 WebBrowser.maybeCompleteAuthSession();
 
 type AuthMode = "sign-in" | "sign-up";
 
+const redirectTo = makeRedirectUri();
+
 export default function LoginScreen() {
   const { theme } = useTheme();
   const router = useRouter();
-  const { signIn, setActive: setSignInActive, isLoaded: signInLoaded } = useSignIn();
-  const { signUp, setActive: setSignUpActive, isLoaded: signUpLoaded } = useSignUp();
-  const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
 
   const [mode, setMode] = useState<AuthMode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -42,39 +44,44 @@ export default function LoginScreen() {
     };
   }, []);
 
-  const isLoaded = signInLoaded && signUpLoaded;
-
   async function handleEmailAuth() {
-    if (!isLoaded || !signIn || !signUp) return;
-
     setError(null);
+    setInfo(null);
     setIsSubmitting(true);
 
     try {
       if (mode === "sign-in") {
-        const result = await signIn.create({
-          identifier: email.trim(),
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
           password,
         });
 
-        if (result.status === "complete" && result.createdSessionId) {
-          await setSignInActive({ session: result.createdSessionId });
-          router.replace("/(tabs)/home" as Href);
-        } else {
-          setError("Sign in could not be completed. Check your credentials.");
+        if (signInError) {
+          throw signInError;
         }
+
+        router.replace("/(tabs)/home" as Href);
       } else {
-        const result = await signUp.create({
-          emailAddress: email.trim(),
+        const username = email.trim().split("@")[0] ?? "student";
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: email.trim(),
           password,
+          options: {
+            data: {
+              full_name: "",
+              username,
+            },
+          },
         });
 
-        if (result.status === "complete" && result.createdSessionId) {
-          await setSignUpActive({ session: result.createdSessionId });
+        if (signUpError) {
+          throw signUpError;
+        }
+
+        if (data.session) {
           router.replace("/(tabs)/home" as Href);
         } else {
-          setError("Check your email to verify your account, then sign in.");
-          
+          setInfo("Check your email to verify your account, then sign in.");
         }
       }
 
@@ -93,15 +100,62 @@ export default function LoginScreen() {
     }
   }
 
-  async function handleGoogleAuth() {
+  async function handleForgotPassword() {
+    if (!email.trim()) {
+      setError("Enter your university email first.");
+      return;
+    }
+
     setError(null);
+    setInfo(null);
     setIsSubmitting(true);
 
     try {
-      const { createdSessionId, setActive } = await startOAuthFlow();
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        email.trim(),
+        { redirectTo }
+      );
 
-      if (createdSessionId) {
-        await setActive?.({ session: createdSessionId });
+      if (resetError) {
+        throw resetError;
+      }
+
+      setInfo("Password reset link sent. Check your email.");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Could not send reset email.";
+      setError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleGoogleAuth() {
+    setError(null);
+    setInfo(null);
+    setIsSubmitting(true);
+
+    try {
+      const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo,
+          skipBrowserRedirect: true,
+        },
+      });
+
+      if (oauthError) {
+        throw oauthError;
+      }
+
+      if (!data?.url) {
+        throw new Error("Google sign in could not be started.");
+      }
+
+      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+
+      if (result.type === "success") {
+        await createSessionFromUrl(result.url);
         router.replace("/(tabs)/home" as Href);
       }
     } catch (err) {
@@ -173,6 +227,7 @@ export default function LoginScreen() {
                 onPress={() => {
                   setMode(item);
                   setError(null);
+                  setInfo(null);
                 }}
                 style={{
                   flex: 1,
@@ -253,7 +308,7 @@ export default function LoginScreen() {
                 paddingVertical: 14,
               }}
             />
-            <Pressable onPress={() => setShowPassword((value) => !value)} hitSlop={8}>
+            <Pressable onPress={() => setShowPassword((value) => !value)} hitSlop={12}>
               <Icon
                 name={showPassword ? "eye.slash" : "eye"}
                 size={18}
@@ -263,7 +318,10 @@ export default function LoginScreen() {
           </View>
 
           {mode === "sign-in" ? (
-            <Pressable style={{ alignSelf: "flex-end" }}>
+            <Pressable
+              style={{ alignSelf: "flex-end", paddingVertical: 4 }}
+              onPress={() => void handleForgotPassword()}
+            >
               <Text selectable style={{ color: theme.primary, fontSize: 14 }}>
                 Forgot password?
               </Text>
@@ -274,6 +332,12 @@ export default function LoginScreen() {
         {error ? (
           <Text selectable style={{ color: theme.error, fontSize: 14 }}>
             {error}
+          </Text>
+        ) : null}
+
+        {info ? (
+          <Text selectable style={{ color: theme.success, fontSize: 14 }}>
+            {info}
           </Text>
         ) : null}
 

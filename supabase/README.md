@@ -4,25 +4,26 @@
 
 In your Supabase project, open **SQL Editor** and run:
 
-1. `supabase/schema.sql` — creates tables and RLS policies
+1. `supabase/schema.sql` — creates tables, auth trigger, and RLS policies
 2. `supabase/seed.sql` — inserts campus content and demo notifications
 
-## 2. Connect Clerk to Supabase (recommended)
+## 2. Enable auth providers
 
-For authenticated reads/writes (profiles, likes, RSVPs, club joins):
+In **Supabase Dashboard** → **Authentication** → **Providers**:
 
-1. In **Clerk Dashboard** → **JWT Templates**, create a template named `supabase`
-2. Use Supabase's Clerk integration settings for the signing key / claims
-3. In **Supabase Dashboard** → **Authentication** → **Providers**, enable third-party auth for Clerk
+- Enable **Email** (email + password)
+- Optional: enable **Google** for OAuth sign-in
 
-The app requests `getToken({ template: "supabase" })` first, then falls back to the default Clerk session token.
+For Google OAuth in Expo, add your app redirect URL from `makeRedirectUri()` to:
+
+- Supabase → Authentication → URL Configuration → Redirect URLs
+- Google Cloud Console → OAuth client → Authorized redirect URIs
 
 ## 3. Environment variables
 
 Ensure `.env` includes:
 
 ```env
-EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
 EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 EXPO_PUBLIC_SUPABASE_PROJECT_ID=your-project-id
 ```
@@ -39,14 +40,15 @@ If Supabase is not configured or tables are empty, the app automatically falls b
 
 ## 5. User-specific data
 
-- Profiles are upserted on sign-in and when saving **Edit Profile**
-- Likes, bookmarks, RSVPs, and club joins sync to Supabase when signed in
-- Notifications with `clerk_id = null` in seed data are visible to all signed-in users (demo broadcast alerts)
+- Auth is handled entirely by **Supabase Auth**
+- A `profiles` row is auto-created on signup via database trigger
+- Likes, bookmarks, RSVPs, and club joins sync when signed in
+- Notifications with `user_id = null` in seed data are visible to all signed-in users (demo broadcast alerts)
 
 To attach notifications to your account after seeding:
 
 ```sql
 update public.notifications
-set clerk_id = 'your_clerk_user_id'
-where clerk_id is null;
+set user_id = 'your_supabase_user_uuid'
+where user_id is null;
 ```

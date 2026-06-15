@@ -4,6 +4,7 @@ import * as Haptics from "expo-haptics";
 import { useCallback, useMemo, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 
+import { CloseButton } from "@/components/icon-button";
 import { EmptyState } from "@/components/empty-state";
 import { FilterChips } from "@/components/filter-chips";
 import { Icon } from "@/components/icon";
@@ -12,7 +13,7 @@ import { NotificationBadge } from "@/components/notification-bell";
 import { NotificationsSkeletonList } from "@/components/skeleton-loader";
 import { NOTIFICATION_FILTERS } from "@/constants/mock-data";
 import { radius, spacing } from "@/constants/theme";
-import { useClerkUserId, useSupabase } from "@/hooks/use-supabase";
+import { useSupabase, useUserId } from "@/hooks/use-supabase";
 import { useTheme } from "@/hooks/use-theme";
 import { markAllNotificationsRead } from "@/services/notifications";
 import {
@@ -28,7 +29,7 @@ export default function NotificationsScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const client = useSupabase();
-  const clerkId = useClerkUserId();
+  const userId = useUserId();
   const { data: notifications = [], isLoading, isRefetching, refetch } =
     useNotifications();
   const unreadCount = useUnreadNotificationCount();
@@ -55,14 +56,14 @@ export default function NotificationsScreen() {
       .map((item) => item.id);
 
     markAllAsRead(unreadIds);
-    if (clerkId) {
-      void markAllNotificationsRead(client, clerkId);
+    if (userId) {
+      void markAllNotificationsRead(client, userId);
     }
 
     if (process.env.EXPO_OS === "ios") {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
-  }, [clerkId, client, isDeleted, isRead, markAllAsRead, notifications]);
+  }, [userId, client, isDeleted, isRead, markAllAsRead, notifications]);
 
   const handleRefresh = useCallback(async () => {
     if (process.env.EXPO_OS === "ios") {
@@ -85,22 +86,7 @@ export default function NotificationsScreen() {
         }}
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-          <Pressable
-            onPress={() => router.back()}
-            hitSlop={8}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 18,
-              backgroundColor: theme.surface,
-              alignItems: "center",
-              justifyContent: "center",
-              borderWidth: 1,
-              borderColor: theme.border,
-            }}
-          >
-            <Icon name="xmark" size={14} color={theme.textPrimary} />
-          </Pressable>
+          <CloseButton onPress={() => router.back()} />
           <Text
             selectable
             style={{ color: theme.textPrimary, fontSize: 24, fontWeight: "700" }}

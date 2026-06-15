@@ -1,7 +1,6 @@
-import { type Href, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
-import { useUser } from "@clerk/clerk-expo";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Pressable,
@@ -11,19 +10,18 @@ import {
   View,
 } from "react-native";
 
-import { Icon } from "@/components/icon";
+import { CloseButton } from "@/components/icon-button";
 import { radius, spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
-import { useSupabase, useClerkUserId } from "@/hooks/use-supabase";
+import { useSupabase, useUserId } from "@/hooks/use-supabase";
 import { upsertProfile } from "@/services/profiles";
 import { useProfileStore } from "@/store/use-profile-store";
 
 export default function EditProfileScreen() {
   const { theme } = useTheme();
   const router = useRouter();
-  const { user } = useUser();
   const client = useSupabase();
-  const clerkId = useClerkUserId();
+  const userId = useUserId();
   const profile = useProfileStore((state) => state.profile);
   const setProfile = useProfileStore((state) => state.setProfile);
 
@@ -35,39 +33,8 @@ export default function EditProfileScreen() {
   const [bio, setBio] = useState(profile.bio);
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    if (!user) return;
-
-    const metadata = user.unsafeMetadata as Partial<{
-      classYear: string;
-      major: string;
-      university: string;
-      bio: string;
-    }>;
-
-    setFullName(user.fullName ?? profile.fullName);
-    setUsername(
-      user.username ??
-        user.primaryEmailAddress?.emailAddress?.split("@")[0] ??
-        profile.username
-    );
-    setClassYear(metadata.classYear ?? profile.classYear);
-    setMajor(metadata.major ?? profile.major);
-    setUniversity(metadata.university ?? profile.university);
-    setBio(metadata.bio ?? profile.bio);
-  }, [user, profile]);
-
   async function handleSave() {
     setIsSaving(true);
-
-    setProfile({
-      fullName: fullName.trim(),
-      username: username.trim(),
-      classYear: classYear.trim(),
-      major: major.trim(),
-      university: university.trim(),
-      bio: bio.trim(),
-    });
 
     const nextProfile = {
       fullName: fullName.trim(),
@@ -80,24 +47,11 @@ export default function EditProfileScreen() {
       postCount: profile.postCount,
     };
 
-    try {
-      if (user) {
-        const [firstName, ...rest] = fullName.trim().split(" ");
-        await user.update({
-          firstName: firstName || undefined,
-          lastName: rest.join(" ") || undefined,
-          username: username.trim() || undefined,
-          unsafeMetadata: {
-            classYear: classYear.trim(),
-            major: major.trim(),
-            university: university.trim(),
-            bio: bio.trim(),
-          },
-        });
-      }
+    setProfile(nextProfile);
 
-      if (clerkId) {
-        await upsertProfile(client, clerkId, nextProfile);
+    try {
+      if (userId) {
+        await upsertProfile(client, userId, nextProfile);
       }
 
       if (process.env.EXPO_OS === "ios") {
@@ -168,29 +122,19 @@ export default function EditProfileScreen() {
           paddingBottom: spacing.xs,
         }}
       >
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={8}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            backgroundColor: theme.surface,
-            alignItems: "center",
-            justifyContent: "center",
-            borderWidth: 1,
-            borderColor: theme.border,
-          }}
-        >
-          <Icon name="xmark" size={14} color={theme.textPrimary} />
-        </Pressable>
+        <CloseButton onPress={() => router.back()} />
         <Text
           selectable
           style={{ color: theme.textPrimary, fontSize: 18, fontWeight: "700" }}
         >
           Edit Profile
         </Text>
-        <Pressable onPress={() => void handleSave()} disabled={isSaving}>
+        <Pressable
+          onPress={() => void handleSave()}
+          disabled={isSaving}
+          hitSlop={12}
+          style={{ minHeight: 44, justifyContent: "center", paddingHorizontal: 4 }}
+        >
           <Text
             selectable
             style={{

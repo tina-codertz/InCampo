@@ -1,5 +1,6 @@
 import { Redirect, Stack, type Href } from "expo-router";
-import { useAuth } from "@clerk/clerk-expo";
+
+import { useAuth } from "@/providers/auth-provider";
 
 export default function AuthLayout() {
   const { isSignedIn, isLoaded } = useAuth();

@@ -1,8 +1,8 @@
-import { useAuth } from "@clerk/clerk-expo";
 import { Redirect, type Href } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 
 import { useTheme } from "@/hooks/use-theme";
+import { useAuth } from "@/providers/auth-provider";
 
 export default function Index() {
   const { isSignedIn, isLoaded } = useAuth();

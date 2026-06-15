@@ -1,8 +1,7 @@
 import { Link, type Href } from "expo-router";
-import * as Haptics from "expo-haptics";
-import { Pressable, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
-import { Icon } from "@/components/icon";
+import { IconButton } from "@/components/icon-button";
 import { useUnreadNotificationCount } from "@/hooks/use-notifications";
 import { useTheme } from "@/hooks/use-theme";
 
@@ -10,28 +9,26 @@ type NotificationBellProps = {
   size?: number;
 };
 
-export function NotificationBell({ size = 22 }: NotificationBellProps) {
+export function NotificationBell({ size = 20 }: NotificationBellProps) {
   const { theme } = useTheme();
   const unreadCount = useUnreadNotificationCount();
 
   return (
     <Link href={"/notifications" as Href} asChild>
-      <Pressable
-        onPress={() => {
-          if (process.env.EXPO_OS === "ios") {
-            void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          }
-        }}
-        hitSlop={8}
-        style={{ position: "relative" }}
-      >
-        <Icon name="bell" size={size} color={theme.textPrimary} />
+      <View style={{ position: "relative" }}>
+        <IconButton
+          accessibilityLabel="Notifications"
+          icon="bell"
+          iconSize={size}
+          variant="surface"
+        />
         {unreadCount > 0 ? (
           <View
+            pointerEvents="none"
             style={{
               position: "absolute",
-              top: -2,
-              right: -2,
+              top: 8,
+              right: 8,
               width: 8,
               height: 8,
               borderRadius: 4,
@@ -39,7 +36,7 @@ export function NotificationBell({ size = 22 }: NotificationBellProps) {
             }}
           />
         ) : null}
-      </Pressable>
+      </View>
     </Link>
   );
 }

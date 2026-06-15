@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
+import { BackButton } from "@/components/icon-button";
 import { Icon } from "@/components/icon";
 import { TagPill } from "@/components/student-avatar";
 import { radius, spacing } from "@/constants/theme";
@@ -112,22 +113,16 @@ export default function ClubDetailScreen() {
             backgroundColor: "rgba(0,0,0,0.35)",
           }}
         />
-        <Pressable
-          onPress={() => router.back()}
+        <View
           style={{
             position: "absolute",
             top: spacing.sm,
             left: spacing.sm,
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            backgroundColor: theme.overlay,
-            alignItems: "center",
-            justifyContent: "center",
+            zIndex: 1,
           }}
         >
-          <Icon name="arrow.left" size={16} color="#FFFFFF" />
-        </Pressable>
+          <BackButton onPress={() => router.back()} />
+        </View>
         {club.featured ? (
           <View style={{ position: "absolute", top: spacing.sm, right: spacing.sm }}>
             <TagPill label="Featured" variant="category" />

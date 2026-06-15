@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Pressable, ScrollView, Share, Text, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
+import { IconButton } from "@/components/icon-button";
 import { Icon } from "@/components/icon";
 import { ProfileActivityList } from "@/components/profile-activity-list";
 import { ProfileSavedGrid } from "@/components/profile-saved-grid";
@@ -100,45 +101,25 @@ export default function ProfileScreen() {
           Profile
         </Text>
         <View style={{ flexDirection: "row", gap: 8 }}>
-          <Pressable
+          <IconButton
+            accessibilityLabel="Toggle theme"
+            icon={colorScheme === "dark" ? "sun.max" : "moon"}
+            iconSize={18}
+            variant="surface"
             onPress={() => {
               if (process.env.EXPO_OS === "ios") {
                 void Haptics.selectionAsync();
               }
               toggleColorScheme();
             }}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: theme.surface,
-              borderWidth: 1,
-              borderColor: theme.border,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Icon
-              name={colorScheme === "dark" ? "sun.max" : "moon"}
-              size={18}
-              color={theme.textPrimary}
-            />
-          </Pressable>
-          <Pressable
+          />
+          <IconButton
+            accessibilityLabel="Settings"
+            icon="gearshape"
+            iconSize={18}
+            variant="surface"
             onPress={openSettings}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: theme.surface,
-              borderWidth: 1,
-              borderColor: theme.border,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Icon name="gearshape" size={18} color={theme.textPrimary} />
-          </Pressable>
+          />
         </View>
       </View>
 

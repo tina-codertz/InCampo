@@ -1,5 +1,4 @@
 -- Incampo seed data (run after schema.sql)
--- Replace YOUR_CLERK_USER_ID with your Clerk user id for personalized notifications
 
 insert into public.announcements (
   id, author_name, author_initials, author_color, is_urgent, category,
@@ -90,12 +89,10 @@ insert into public.clubs (
    'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=800&q=80', false, now())
 on conflict (id) do nothing;
 
--- Notifications are user-scoped. After signing in, run:
--- update public.notifications set clerk_id = 'your_clerk_user_id' where clerk_id is null;
--- Or insert with your clerk_id after creating a profile row.
+-- Notifications are user-scoped. Broadcast demo rows use user_id = null.
 
 insert into public.notifications (
-  id, clerk_id, type, title, body, section, is_read, created_at
+  id, user_id, type, title, body, section, is_read, created_at
 ) values
   ('1', null, 'like', 'Sarah Chen', 'liked your comment on Campus Library Extended Hours', 'TODAY', false, now() - interval '2 minutes'),
   ('2', null, 'reply', 'Marcus Lee', 'replied to your comment: "Thanks for sharing this!"', 'TODAY', false, now() - interval '15 minutes'),

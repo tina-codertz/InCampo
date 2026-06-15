@@ -1,9 +1,9 @@
-import { useAuth } from "@clerk/clerk-expo";
 import { useEffect } from "react";
 
 import { setEngagementContext } from "@/lib/engagement-context";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { useSupabase } from "@/hooks/use-supabase";
+import { useAuth } from "@/providers/auth-provider";
 import { fetchEngagement } from "@/services/engagement";
 import { ensureProfile } from "@/services/profiles";
 import { useClubsStore } from "@/store/use-clubs-store";
@@ -25,19 +25,16 @@ export function useBackendSync() {
       return;
     }
 
-    setEngagementContext({ clerkId: userId, client });
+    const activeUserId = userId;
+    setEngagementContext({ userId: activeUserId, client });
 
     let cancelled = false;
 
     async function sync() {
-      if (!userId) {
-        return;
-      }
-
       const localProfile = useProfileStore.getState().profile;
 
       try {
-        const remoteProfile = await ensureProfile(client, userId, localProfile);
+        const remoteProfile = await ensureProfile(client, activeUserId, localProfile);
         if (!cancelled && remoteProfile) {
           setProfile(remoteProfile);
         }
@@ -46,7 +43,7 @@ export function useBackendSync() {
       }
 
       try {
-        const engagement = await fetchEngagement(client, userId);
+        const engagement = await fetchEngagement(client, activeUserId);
         if (cancelled) {
           return;
         }

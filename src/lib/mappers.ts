@@ -104,11 +104,11 @@ export function mapProfile(row: ProfileRow): UserProfile {
 }
 
 export function profileToRow(
-  clerkId: string,
+  userId: string,
   profile: UserProfile
 ): Omit<ProfileRow, "created_at" | "updated_at"> {
   return {
-    clerk_id: clerkId,
+    user_id: userId,
     full_name: profile.fullName,
     username: profile.username,
     class_year: profile.classYear,

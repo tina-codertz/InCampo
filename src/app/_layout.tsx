@@ -1,11 +1,9 @@
-import { ClerkProvider } from "@clerk/clerk-expo";
-import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import { env } from "@/lib/env";
+import { AuthProvider } from "@/providers/auth-provider";
 import { useAppStore } from "@/store/use-app-store";
 
 const queryClient = new QueryClient();
@@ -60,15 +58,12 @@ function RootNavigator() {
 
 export default function RootLayout() {
   return (
-    <ClerkProvider
-      publishableKey={env.clerkPublishableKey}
-      tokenCache={tokenCache}
-    >
+    <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <RootNavigator />
         </GestureHandlerRootView>
       </QueryClientProvider>
-    </ClerkProvider>
+    </AuthProvider>
   );
 }

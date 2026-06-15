@@ -38,7 +38,7 @@ export const useClubsStore = create<ClubsState>()(
 
         const context = getEngagementContext();
         if (context) {
-          void syncClubJoin(context.client, context.clerkId, id, nextJoined);
+          void syncClubJoin(context.client, context.userId, id, nextJoined);
         }
       },
       isJoined: (id) => get().joinedIds.includes(id),

@@ -6,7 +6,7 @@ import type { NotificationItem } from "@/types";
 
 export async function fetchNotifications(
   client: AppSupabaseClient,
-  clerkId?: string | null
+  userId?: string | null
 ): Promise<NotificationItem[]> {
   return withMockFallback(async () => {
     let query = client
@@ -14,8 +14,8 @@ export async function fetchNotifications(
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (clerkId) {
-      query = query.or(`clerk_id.is.null,clerk_id.eq.${clerkId}`);
+    if (userId) {
+      query = query.or(`user_id.is.null,user_id.eq.${userId}`);
     }
 
     const { data, error } = await query;
@@ -30,23 +30,23 @@ export async function fetchNotifications(
 
 export async function markNotificationRead(
   client: AppSupabaseClient,
-  clerkId: string,
+  userId: string,
   notificationId: string
 ) {
   await client
     .from("notifications")
     .update({ is_read: true })
     .eq("id", notificationId)
-    .or(`clerk_id.is.null,clerk_id.eq.${clerkId}`);
+    .or(`user_id.is.null,user_id.eq.${userId}`);
 }
 
 export async function markAllNotificationsRead(
   client: AppSupabaseClient,
-  clerkId: string
+  userId: string
 ) {
   await client
     .from("notifications")
     .update({ is_read: true })
-    .or(`clerk_id.is.null,clerk_id.eq.${clerkId}`)
+    .or(`user_id.is.null,user_id.eq.${userId}`)
     .eq("is_read", false);
 }

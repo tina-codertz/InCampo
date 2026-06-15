@@ -1,11 +1,11 @@
--- Incampo Supabase schema
+-- Incampo Supabase schema (Supabase Auth)
 -- Run in Supabase SQL Editor, then run seed.sql
 
 create extension if not exists "pgcrypto";
 
--- Profiles (linked to Clerk user id)
+-- Profiles (linked to Supabase auth.users)
 create table if not exists public.profiles (
-  clerk_id text primary key,
+  user_id uuid primary key references auth.users (id) on delete cascade,
   full_name text not null default '',
   username text not null default '',
   class_year text not null default '',
@@ -68,7 +68,7 @@ create table if not exists public.clubs (
 -- User notifications
 create table if not exists public.notifications (
   id text primary key,
-  clerk_id text references public.profiles (clerk_id) on delete cascade,
+  user_id uuid references public.profiles (user_id) on delete cascade,
   type text not null check (type in ('like', 'reply', 'event', 'club')),
   title text not null,
   body text not null,
@@ -79,39 +79,39 @@ create table if not exists public.notifications (
 
 -- User engagement tables
 create table if not exists public.announcement_likes (
-  clerk_id text not null references public.profiles (clerk_id) on delete cascade,
+  user_id uuid not null references public.profiles (user_id) on delete cascade,
   announcement_id text not null references public.announcements (id) on delete cascade,
   created_at timestamptz not null default now(),
-  primary key (clerk_id, announcement_id)
+  primary key (user_id, announcement_id)
 );
 
 create table if not exists public.bookmarks (
-  clerk_id text not null references public.profiles (clerk_id) on delete cascade,
+  user_id uuid not null references public.profiles (user_id) on delete cascade,
   content_type text not null check (content_type in ('announcement')),
   content_id text not null,
   created_at timestamptz not null default now(),
-  primary key (clerk_id, content_type, content_id)
+  primary key (user_id, content_type, content_id)
 );
 
 create table if not exists public.event_rsvps (
-  clerk_id text not null references public.profiles (clerk_id) on delete cascade,
+  user_id uuid not null references public.profiles (user_id) on delete cascade,
   event_id text not null references public.events (id) on delete cascade,
   created_at timestamptz not null default now(),
-  primary key (clerk_id, event_id)
+  primary key (user_id, event_id)
 );
 
 create table if not exists public.club_members (
-  clerk_id text not null references public.profiles (clerk_id) on delete cascade,
+  user_id uuid not null references public.profiles (user_id) on delete cascade,
   club_id text not null references public.clubs (id) on delete cascade,
   created_at timestamptz not null default now(),
-  primary key (clerk_id, club_id)
+  primary key (user_id, club_id)
 );
 
 -- Indexes
 create index if not exists idx_announcements_created_at on public.announcements (created_at desc);
 create index if not exists idx_events_created_at on public.events (created_at desc);
 create index if not exists idx_clubs_created_at on public.clubs (created_at desc);
-create index if not exists idx_notifications_clerk_id on public.notifications (clerk_id, created_at desc);
+create index if not exists idx_notifications_user_id on public.notifications (user_id, created_at desc);
 
 -- Updated_at trigger for profiles
 create or replace function public.set_updated_at()
@@ -128,6 +128,35 @@ drop trigger if exists profiles_updated_at on public.profiles;
 create trigger profiles_updated_at
 before update on public.profiles
 for each row execute function public.set_updated_at();
+
+-- Auto-create profile row on signup
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.profiles (user_id, full_name, username)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data ->> 'full_name', ''),
+    coalesce(
+      new.raw_user_meta_data ->> 'username',
+      split_part(new.email, '@', 1),
+      ''
+    )
+  )
+  on conflict (user_id) do nothing;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+after insert on auth.users
+for each row execute function public.handle_new_user();
 
 -- Row Level Security
 alter table public.profiles enable row level security;
@@ -160,55 +189,52 @@ using (true);
 drop policy if exists "Users read own profile" on public.profiles;
 create policy "Users read own profile"
 on public.profiles for select
-using (clerk_id = coalesce(auth.jwt() ->> 'sub', ''));
+using (user_id = auth.uid());
 
 drop policy if exists "Users insert own profile" on public.profiles;
 create policy "Users insert own profile"
 on public.profiles for insert
-with check (clerk_id = coalesce(auth.jwt() ->> 'sub', ''));
+with check (user_id = auth.uid());
 
 drop policy if exists "Users update own profile" on public.profiles;
 create policy "Users update own profile"
 on public.profiles for update
-using (clerk_id = coalesce(auth.jwt() ->> 'sub', ''))
-with check (clerk_id = coalesce(auth.jwt() ->> 'sub', ''));
+using (user_id = auth.uid())
+with check (user_id = auth.uid());
 
 -- Notifications: user-scoped
 drop policy if exists "Users read own notifications" on public.notifications;
 create policy "Users read own notifications"
 on public.notifications for select
-using (
-  clerk_id is null
-  or clerk_id = coalesce(auth.jwt() ->> 'sub', '')
-);
+using (user_id is null or user_id = auth.uid());
 
 drop policy if exists "Users update own notifications" on public.notifications;
 create policy "Users update own notifications"
 on public.notifications for update
-using (clerk_id = coalesce(auth.jwt() ->> 'sub', ''))
-with check (clerk_id = coalesce(auth.jwt() ->> 'sub', ''));
+using (user_id is null or user_id = auth.uid())
+with check (user_id is null or user_id = auth.uid());
 
 -- Engagement: user-scoped
 drop policy if exists "Users manage own likes" on public.announcement_likes;
 create policy "Users manage own likes"
 on public.announcement_likes for all
-using (clerk_id = coalesce(auth.jwt() ->> 'sub', ''))
-with check (clerk_id = coalesce(auth.jwt() ->> 'sub', ''));
+using (user_id = auth.uid())
+with check (user_id = auth.uid());
 
 drop policy if exists "Users manage own bookmarks" on public.bookmarks;
 create policy "Users manage own bookmarks"
 on public.bookmarks for all
-using (clerk_id = coalesce(auth.jwt() ->> 'sub', ''))
-with check (clerk_id = coalesce(auth.jwt() ->> 'sub', ''));
+using (user_id = auth.uid())
+with check (user_id = auth.uid());
 
 drop policy if exists "Users manage own rsvps" on public.event_rsvps;
 create policy "Users manage own rsvps"
 on public.event_rsvps for all
-using (clerk_id = coalesce(auth.jwt() ->> 'sub', ''))
-with check (clerk_id = coalesce(auth.jwt() ->> 'sub', ''));
+using (user_id = auth.uid())
+with check (user_id = auth.uid());
 
 drop policy if exists "Users manage own club memberships" on public.club_members;
 create policy "Users manage own club memberships"
 on public.club_members for all
-using (clerk_id = coalesce(auth.jwt() ->> 'sub', ''))
-with check (clerk_id = coalesce(auth.jwt() ->> 'sub', ''));
+using (user_id = auth.uid())
+with check (user_id = auth.uid());

@@ -41,7 +41,7 @@ export const useFeedStore = create<FeedState>()(
 
         const context = getEngagementContext();
         if (context) {
-          void syncLike(context.client, context.clerkId, id, nextLiked);
+          void syncLike(context.client, context.userId, id, nextLiked);
         }
       },
       toggleBookmark: (id) => {
@@ -57,7 +57,7 @@ export const useFeedStore = create<FeedState>()(
 
         const context = getEngagementContext();
         if (context) {
-          void syncBookmark(context.client, context.clerkId, id, nextBookmarked);
+          void syncBookmark(context.client, context.userId, id, nextBookmarked);
         }
       },
       isLiked: (id) => get().likedIds.includes(id),

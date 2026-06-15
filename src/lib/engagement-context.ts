@@ -1,7 +1,7 @@
 import type { AppSupabaseClient } from "@/lib/supabase";
 
 type EngagementContext = {
-  clerkId: string;
+  userId: string;
   client: AppSupabaseClient;
 };
 
