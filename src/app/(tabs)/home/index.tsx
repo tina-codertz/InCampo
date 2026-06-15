@@ -1,139 +1,53 @@
-import { ScrollView, Text, View } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import { useQueryClient } from "@tanstack/react-query";
+import * as Haptics from "expo-haptics";
+import { useCallback, useMemo, useState } from "react";
+import {
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
+import { AnnouncementCard } from "@/components/announcement-card";
 import { CampusSearchBar } from "@/components/campus-search-bar";
+import { EmptyState } from "@/components/empty-state";
 import { Icon } from "@/components/icon";
 import { NotificationBell } from "@/components/notification-bell";
+import { FeedSkeletonList } from "@/components/skeleton-loader";
 import { StudentAvatar, TagPill } from "@/components/student-avatar";
-import {
-  MOCK_ANNOUNCEMENTS,
-  MOCK_STUDENTS,
-  TRENDING_TAGS,
-} from "@/constants/mock-data";
+import { MOCK_STUDENTS, TRENDING_TAGS } from "@/constants/mock-data";
 import { radius, spacing } from "@/constants/theme";
+import {
+  filterAnnouncements,
+  useAnnouncements,
+} from "@/hooks/use-announcements";
 import { useTheme } from "@/hooks/use-theme";
-
-function AnnouncementCard({
-  announcement,
-  index,
-}: {
-  announcement: (typeof MOCK_ANNOUNCEMENTS)[number];
-  index: number;
-}) {
-  const { theme } = useTheme();
-
-  return (
-    <Animated.View
-      entering={FadeInDown.delay(index * 80).springify()}
-      style={{
-        backgroundColor: theme.surface,
-        borderRadius: radius.card,
-        borderWidth: 1,
-        borderColor: theme.border,
-        padding: spacing.sm,
-        gap: spacing.xs,
-      }}
-    >
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-          <StudentAvatar
-            initials={announcement.authorInitials}
-            color={announcement.authorColor}
-            size={40}
-          />
-          <View style={{ gap: 4 }}>
-            <Text
-              selectable
-              style={{ color: theme.textPrimary, fontWeight: "600", fontSize: 15 }}
-            >
-              {announcement.authorName}
-            </Text>
-            <View style={{ flexDirection: "row", gap: 6 }}>
-              {announcement.isUrgent ? <TagPill label="URGENT" variant="urgent" /> : null}
-              <TagPill label={announcement.category} variant="category" />
-            </View>
-          </View>
-        </View>
-        <View style={{ alignItems: "flex-end", gap: 4 }}>
-          <Text selectable style={{ color: theme.textMuted, fontSize: 12 }}>
-            {announcement.timestamp}
-          </Text>
-          <Icon name="chevron.right" size={14} color={theme.textMuted} />
-        </View>
-      </View>
-
-      <Text
-        selectable
-        style={{
-          color: theme.textPrimary,
-          fontSize: 17,
-          fontWeight: "700",
-          marginTop: 4,
-        }}
-      >
-        {announcement.title}
-      </Text>
-      <Text selectable style={{ color: theme.textSecondary, fontSize: 14, lineHeight: 20 }}>
-        {announcement.body}
-      </Text>
-
-      <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-        {announcement.tags.map((tag) => (
-          <TagPill key={tag} label={tag} />
-        ))}
-      </View>
-
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginTop: 4,
-        }}
-      >
-        <View style={{ flexDirection: "row", gap: 16 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <Icon name="heart" size={18} color={theme.textMuted} />
-            <Text
-              selectable
-              style={{
-                color: theme.textSecondary,
-                fontSize: 13,
-                fontVariant: ["tabular-nums"],
-              }}
-            >
-              {announcement.likes}
-            </Text>
-          </View>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <Icon name="bubble.left" size={18} color={theme.textMuted} />
-            <Text
-              selectable
-              style={{
-                color: theme.textSecondary,
-                fontSize: 13,
-                fontVariant: ["tabular-nums"],
-              }}
-            >
-              {announcement.comments}
-            </Text>
-          </View>
-          <Icon name="square.and.arrow.up" size={18} color={theme.textMuted} />
-        </View>
-        <Icon name="bookmark" size={18} color={theme.textMuted} />
-      </View>
-    </Animated.View>
-  );
-}
+import { useProfileStore } from "@/store/use-profile-store";
 
 export default function HomeScreen() {
   const { theme } = useTheme();
+  const queryClient = useQueryClient();
+  const profile = useProfileStore((state) => state.profile);
+  const { data: announcements = [], isLoading, isRefetching, refetch } =
+    useAnnouncements();
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTag, setSelectedTag] = useState<string | undefined>();
+
+  const filteredAnnouncements = useMemo(
+    () => filterAnnouncements(announcements, searchQuery, selectedTag),
+    [announcements, searchQuery, selectedTag]
+  );
+
+  const firstName = profile.fullName.split(" ")[0] ?? "there";
+
+  const handleRefresh = useCallback(async () => {
+    if (process.env.EXPO_OS === "ios") {
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    await queryClient.invalidateQueries({ queryKey: ["announcements"] });
+    await refetch();
+  }, [queryClient, refetch]);
 
   return (
     <ScrollView
@@ -145,6 +59,13 @@ export default function HomeScreen() {
         backgroundColor: theme.background,
       }}
       style={{ flex: 1, backgroundColor: theme.background }}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefetching}
+          onRefresh={() => void handleRefresh()}
+          tintColor={theme.primary}
+        />
+      }
     >
       <View
         style={{
@@ -171,11 +92,21 @@ export default function HomeScreen() {
           >
             Incampo
           </Text>
+          <Text selectable style={{ color: theme.textSecondary, fontSize: 14 }}>
+            Hey {firstName}, here&apos;s what&apos;s happening on campus
+          </Text>
         </View>
         <NotificationBell />
       </View>
 
-      <CampusSearchBar placeholder="Search announcements, events..." />
+      <CampusSearchBar
+        placeholder="Search announcements, events..."
+        value={searchQuery}
+        onChangeText={(text) => {
+          setSearchQuery(text);
+          if (text) setSelectedTag(undefined);
+        }}
+      />
 
       <ScrollView
         horizontal
@@ -213,19 +144,44 @@ export default function HomeScreen() {
           </Text>
         </View>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-          {TRENDING_TAGS.map((tag) => (
-            <TagPill key={tag} label={tag} variant="primary" />
-          ))}
+          {TRENDING_TAGS.map((tag) => {
+            const isActive = selectedTag === tag;
+
+            return (
+              <TagPill
+                key={tag}
+                label={tag}
+                variant={isActive ? "primary" : "default"}
+                onPress={() => {
+                  if (process.env.EXPO_OS === "ios") {
+                    void Haptics.selectionAsync();
+                  }
+                  setSelectedTag(isActive ? undefined : tag);
+                  setSearchQuery("");
+                }}
+              />
+            );
+          })}
         </View>
       </View>
 
-      {MOCK_ANNOUNCEMENTS.map((announcement, index) => (
-        <AnnouncementCard
-          key={announcement.id}
-          announcement={announcement}
-          index={index}
+      {isLoading ? (
+        <FeedSkeletonList count={3} />
+      ) : filteredAnnouncements.length === 0 ? (
+        <EmptyState
+          title="No announcements found"
+          description="Try a different search term or clear your trending filter."
+          icon="magnifyingglass"
         />
-      ))}
+      ) : (
+        filteredAnnouncements.map((announcement, index) => (
+          <AnnouncementCard
+            key={announcement.id}
+            announcement={announcement}
+            index={index}
+          />
+        ))
+      )}
     </ScrollView>
   );
 }

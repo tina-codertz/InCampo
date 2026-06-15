@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { View } from "react-native";
 import Animated, {
+  type SharedValue,
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
@@ -18,7 +19,7 @@ function SkeletonBlock({
 }: {
   width: number | `${number}%`;
   height: number;
-  opacity: Animated.SharedValue<number>;
+  opacity: SharedValue<number>;
 }) {
   const { theme } = useTheme();
 
