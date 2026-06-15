@@ -74,6 +74,7 @@ export default function LoginScreen() {
           router.replace("/(tabs)/home" as Href);
         } else {
           setError("Check your email to verify your account, then sign in.");
+          
         }
       }
 
