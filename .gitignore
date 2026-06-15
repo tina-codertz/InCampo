@@ -6,6 +6,8 @@ node_modules/
 # skills
 .agents/
 AGENTS.md
+CLAUDE.md
+PLAN.md
 
 # Expo
 .expo/

@@ -1,17 +1,31 @@
-import { Text, View, StyleSheet } from "react-native";
+import { useAuth } from "@clerk/clerk-expo";
+import { Redirect, type Href } from "expo-router";
+import { ActivityIndicator, View } from "react-native";
+
+import { useTheme } from "@/hooks/use-theme";
 
 export default function Index() {
-  return (
-    <View style={styles.container}>
-      <Text>Incampo.</Text>
-    </View>
-  );
-}
+  const { isSignedIn, isLoaded } = useAuth();
+  const { theme } = useTheme();
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
+  if (!isLoaded) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: theme.background,
+        }}
+      >
+        <ActivityIndicator color={theme.primary} />
+      </View>
+    );
+  }
+
+  if (isSignedIn) {
+    return <Redirect href={"/(tabs)/home" as Href} />;
+  }
+
+  return <Redirect href={"/(auth)/login" as Href} />;
+}
