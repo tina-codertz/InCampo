@@ -116,7 +116,7 @@ export default function EventDetailScreen() {
             justifyContent: "center",
           }}
         >
-          <Icon name="chevron.right" size={16} color="#FFFFFF" style={{ transform: [{ rotate: "180deg" }] }} />
+          <Icon name="arrow.left" size={16} color="#FFFFFF" />
         </Pressable>
         {event.featured ? (
           <View style={{ position: "absolute", top: spacing.sm, right: spacing.sm }}>

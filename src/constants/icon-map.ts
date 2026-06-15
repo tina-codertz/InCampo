@@ -43,6 +43,7 @@ export const ICON_MAP = {
   eye: { ios: "eye", android: "visibility" },
   "eye.slash": { ios: "eye.slash", android: "visibility_off" },
   "arrow.right": { ios: "arrow.right", android: "arrow_forward" },
+  "arrow.left": { ios: "arrow.left", android: "arrow_back" },
   "graduationcap.fill": { ios: "graduationcap.fill", android: "school" },
 } as const satisfies Record<string, { ios: SFSymbol; android: AndroidSymbol }>;
 
