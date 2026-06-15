@@ -104,6 +104,9 @@ export const MOCK_EVENTS: EventItem[] = [
     time: "6:00 PM",
     location: "Engineering Hub, Room 301",
     attendees: 234,
+    host: "CS Department",
+    description:
+      "Build innovative projects over 48 hours with mentors, workshops, and prizes. Teams of 2–4 students. Meals and swag provided.",
     imageUrl:
       "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&q=80",
     featured: true,
@@ -116,9 +119,11 @@ export const MOCK_EVENTS: EventItem[] = [
     time: "7:00 PM",
     location: "Arts Center Gallery",
     attendees: 67,
+    host: "Fine Arts Society",
+    description:
+      "Celebrate student and faculty work across painting, sculpture, and digital media. Light refreshments and live acoustic set.",
     imageUrl:
       "https://images.unsplash.com/photo-1460661419345-08bfab32645f?w=400&q=80",
-    isGoing: true,
   },
   {
     id: "3",
@@ -128,9 +133,40 @@ export const MOCK_EVENTS: EventItem[] = [
     time: "5:30 PM",
     location: "Campus Recreation Center",
     attendees: 156,
+    host: "Campus Athletics",
+    description:
+      "Championship game between the Engineers and the Wildcats. Free entry for students with campus ID.",
     imageUrl:
       "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&q=80",
     featured: true,
+  },
+  {
+    id: "4",
+    title: "Startup Pitch Night",
+    category: "Social",
+    date: "Dec 20",
+    time: "6:30 PM",
+    location: "Innovation Lab, Building C",
+    attendees: 98,
+    host: "Entrepreneurship Hub",
+    description:
+      "Watch student founders pitch their ventures to alumni judges. Networking mixer follows the presentations.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&q=80",
+  },
+  {
+    id: "5",
+    title: "Mindfulness & Finals Prep Workshop",
+    category: "Academic",
+    date: "Dec 11",
+    time: "4:00 PM",
+    location: "Wellness Center, Room 102",
+    attendees: 44,
+    host: "Student Wellness",
+    description:
+      "Guided meditation, study planning strategies, and stress-management tools to help you finish the semester strong.",
+    imageUrl:
+      "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80",
   },
 ];
 

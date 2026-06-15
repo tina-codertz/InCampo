@@ -29,8 +29,9 @@ export type EventItem = {
   location: string;
   attendees: number;
   imageUrl: string;
+  description: string;
+  host: string;
   featured?: boolean;
-  isGoing?: boolean;
 };
 
 export type Club = {

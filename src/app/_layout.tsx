@@ -34,6 +34,12 @@ function RootNavigator() {
             animation: "slide_from_bottom",
           }}
         />
+        <Stack.Screen
+          name="event/[id]"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
       </Stack>
     </>
   );
