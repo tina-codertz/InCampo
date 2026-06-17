@@ -10,10 +10,12 @@ import {
   Text,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { BackButton } from "@/components/icon-button";
 import { Icon } from "@/components/icon";
+import { Screen } from "@/components/screen";
 import { TagPill } from "@/components/student-avatar";
 import { radius, spacing } from "@/constants/theme";
 import { useEvent } from "@/hooks/use-events";
@@ -23,6 +25,7 @@ import { useEventsStore } from "@/store/use-events-store";
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const { data: event, isLoading, isError } = useEvent(id ?? "");
 
@@ -54,31 +57,32 @@ export default function EventDetailScreen() {
 
   if (isLoading) {
     return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: theme.background,
-        }}
-      >
-        <ActivityIndicator color={theme.primary} />
-      </View>
+      <Screen>
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <ActivityIndicator color={theme.primary} />
+        </View>
+      </Screen>
     );
   }
 
   if (isError || !event) {
     return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: theme.background,
-          padding: spacing.md,
-          gap: spacing.sm,
-        }}
-      >
+      <Screen>
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            padding: spacing.md,
+            gap: spacing.sm,
+          }}
+        >
         <Text selectable style={{ color: theme.textPrimary, fontSize: 18, fontWeight: "700" }}>
           Event not found
         </Text>
@@ -87,16 +91,17 @@ export default function EventDetailScreen() {
             Go back
           </Text>
         </Pressable>
-      </View>
+        </View>
+      </Screen>
     );
   }
 
   return (
-    <ScrollView
-      contentInsetAdjustmentBehavior="automatic"
-      style={{ flex: 1, backgroundColor: theme.background }}
-      contentContainerStyle={{ paddingBottom: spacing.xl }}
-    >
+    <Screen edges={["left", "right", "bottom"]}>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: spacing.xl }}
+        style={{ flex: 1 }}
+      >
       <View style={{ position: "relative" }}>
         <Image
           source={{ uri: event.imageUrl }}
@@ -106,7 +111,7 @@ export default function EventDetailScreen() {
         <View
           style={{
             position: "absolute",
-            top: spacing.sm,
+            top: insets.top + spacing.xs,
             left: spacing.sm,
             zIndex: 1,
           }}
@@ -223,5 +228,6 @@ export default function EventDetailScreen() {
         </View>
       </Animated.View>
     </ScrollView>
+    </Screen>
   );
 }

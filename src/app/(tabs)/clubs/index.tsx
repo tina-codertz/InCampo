@@ -10,15 +10,18 @@ import {
 } from "@/components/club-card";
 import { EmptyState } from "@/components/empty-state";
 import { FilterChips } from "@/components/filter-chips";
+import { Screen } from "@/components/screen";
 import { ClubsSkeletonList } from "@/components/skeleton-loader";
 import { CLUB_FILTERS } from "@/constants/mock-data";
 import { spacing } from "@/constants/theme";
 import { filterClubs, useClubs } from "@/hooks/use-clubs";
 import { useTheme } from "@/hooks/use-theme";
+import { useTabBarHeight } from "@/hooks/use-tab-bar-height";
 import { useClubsStore } from "@/store/use-clubs-store";
 
 export default function ClubsScreen() {
   const { theme } = useTheme();
+  const tabBarHeight = useTabBarHeight();
   const queryClient = useQueryClient();
   const { data: clubs = [], isLoading, isRefetching, refetch } = useClubs();
   const joinedCount = useClubsStore((state) => state.getJoinedCount());
@@ -43,15 +46,14 @@ export default function ClubsScreen() {
   }, [queryClient, refetch]);
 
   return (
-    <ScrollView
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{
-        padding: spacing.sm,
-        paddingBottom: 120,
-        gap: spacing.sm,
-        backgroundColor: theme.background,
-      }}
-      style={{ flex: 1, backgroundColor: theme.background }}
+    <Screen>
+      <ScrollView
+        contentContainerStyle={{
+          padding: spacing.sm,
+          paddingBottom: tabBarHeight,
+          gap: spacing.sm,
+        }}
+        style={{ flex: 1 }}
       refreshControl={
         <RefreshControl
           refreshing={isRefetching}
@@ -158,5 +160,6 @@ export default function ClubsScreen() {
         </>
       )}
     </ScrollView>
+    </Screen>
   );
 }

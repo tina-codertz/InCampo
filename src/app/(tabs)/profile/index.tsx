@@ -8,6 +8,7 @@ import { IconButton } from "@/components/icon-button";
 import { Icon } from "@/components/icon";
 import { ProfileActivityList } from "@/components/profile-activity-list";
 import { ProfileSavedGrid } from "@/components/profile-saved-grid";
+import { Screen } from "@/components/screen";
 import { StudentAvatar } from "@/components/student-avatar";
 import { radius, spacing } from "@/constants/theme";
 import {
@@ -16,6 +17,7 @@ import {
   useProfileStats,
 } from "@/hooks/use-profile-content";
 import { useTheme } from "@/hooks/use-theme";
+import { useTabBarHeight } from "@/hooks/use-tab-bar-height";
 import { useAppStore } from "@/store/use-app-store";
 import { useProfileStore } from "@/store/use-profile-store";
 
@@ -29,6 +31,7 @@ export default function ProfileScreen() {
   const savedItems = useProfileSavedItems();
   const activityItems = useProfileActivityItems();
   const [activeTab, setActiveTab] = useState<"saved" | "activity">("saved");
+  const tabBarHeight = useTabBarHeight();
 
   const headerStats = [
     { label: "Posts", value: stats.posts },
@@ -77,16 +80,15 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScrollView
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{
-        padding: spacing.sm,
-        paddingBottom: 120,
-        gap: spacing.sm,
-        backgroundColor: theme.background,
-      }}
-      style={{ flex: 1, backgroundColor: theme.background }}
-    >
+    <Screen>
+      <ScrollView
+        contentContainerStyle={{
+          padding: spacing.sm,
+          paddingBottom: tabBarHeight,
+          gap: spacing.sm,
+        }}
+        style={{ flex: 1 }}
+      >
       <View
         style={{
           flexDirection: "row",
@@ -336,5 +338,6 @@ export default function ProfileScreen() {
         <ProfileActivityList items={activityItems} />
       )}
     </ScrollView>
+    </Screen>
   );
 }

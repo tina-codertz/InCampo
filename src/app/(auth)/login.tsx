@@ -14,6 +14,7 @@ import {
 } from "react-native";
 
 import { Icon } from "@/components/icon";
+import { Screen } from "@/components/screen";
 import { radius, spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { createSessionFromUrl } from "@/lib/auth-session";
@@ -168,12 +169,12 @@ export default function LoginScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: theme.background }}
-      behavior={process.env.EXPO_OS === "ios" ? "padding" : undefined}
-    >
+    <Screen edges={["top", "left", "right", "bottom"]}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={process.env.EXPO_OS === "ios" ? "padding" : undefined}
+      >
       <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
           flexGrow: 1,
@@ -414,6 +415,7 @@ export default function LoginScreen() {
           <Text style={{ color: theme.primary }}>Privacy Policy</Text>.
         </Text>
       </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </Screen>
   );
 }

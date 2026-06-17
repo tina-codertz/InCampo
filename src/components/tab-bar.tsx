@@ -5,6 +5,14 @@ import { Pressable, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Icon } from "@/components/icon";
+import {
+  TAB_BAR_FLOATING_OFFSET,
+  TAB_BAR_ICON_SIZE,
+  TAB_BAR_ITEM_GAP,
+  TAB_BAR_LABEL_HEIGHT,
+  TAB_BAR_PILL_HEIGHT,
+  TAB_BAR_VERTICAL_PADDING,
+} from "@/constants/layout";
 import { radius, spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import type { TabRoute } from "@/types";
@@ -59,16 +67,16 @@ export function TabBar() {
   return (
     <View
       style={{
-        position: "absolute",
-        left: spacing.sm,
-        right: spacing.sm,
-        bottom: insets.bottom + 8,
+        paddingHorizontal: spacing.sm,
+        paddingBottom: insets.bottom + TAB_BAR_FLOATING_OFFSET,
+        backgroundColor: "transparent",
       }}
     >
       <BlurView
         intensity={isDark ? 60 : 80}
         tint={isDark ? "dark" : "light"}
         style={{
+          height: TAB_BAR_PILL_HEIGHT,
           borderRadius: radius.sheet,
           overflow: "hidden",
           borderWidth: 1,
@@ -78,11 +86,12 @@ export function TabBar() {
       >
         <View
           style={{
+            flex: 1,
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-around",
-            paddingVertical: 12,
-            paddingHorizontal: 8,
+            paddingVertical: TAB_BAR_VERTICAL_PADDING,
+            paddingHorizontal: spacing.xs,
           }}
         >
           {TABS.map((tab) => {
@@ -99,15 +108,15 @@ export function TabBar() {
                 }}
                 style={{
                   alignItems: "center",
-                  gap: 4,
+                  gap: TAB_BAR_ITEM_GAP,
                   minWidth: 64,
                 }}
               >
                 <View
                   style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 22,
+                    width: TAB_BAR_ICON_SIZE,
+                    height: TAB_BAR_ICON_SIZE,
+                    borderRadius: TAB_BAR_ICON_SIZE / 2,
                     alignItems: "center",
                     justifyContent: "center",
                     backgroundColor: isActive ? theme.primaryMuted : "transparent",
@@ -122,6 +131,7 @@ export function TabBar() {
                 <Text
                   style={{
                     fontSize: 11,
+                    lineHeight: TAB_BAR_LABEL_HEIGHT,
                     fontWeight: isActive ? "600" : "500",
                     color: isActive ? theme.primary : theme.textMuted,
                   }}

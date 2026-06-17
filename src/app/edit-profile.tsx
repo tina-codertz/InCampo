@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import { CloseButton } from "@/components/icon-button";
+import { Screen } from "@/components/screen";
 import { radius, spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useSupabase, useUserId } from "@/hooks/use-supabase";
@@ -119,17 +120,17 @@ export default function EditProfileScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: theme.background }}
-      behavior={process.env.EXPO_OS === "ios" ? "padding" : undefined}
-    >
+    <Screen edges={["top", "left", "right", "bottom"]}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={process.env.EXPO_OS === "ios" ? "padding" : undefined}
+      >
       <View
         style={{
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
           paddingHorizontal: spacing.sm,
-          paddingTop: spacing.sm,
           paddingBottom: spacing.xs,
         }}
       >
@@ -161,7 +162,6 @@ export default function EditProfileScreen() {
       </View>
 
       <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
           padding: spacing.sm,
@@ -175,6 +175,7 @@ export default function EditProfileScreen() {
         <Field label="University" value={university} onChangeText={setUniversity} />
         <Field label="Bio" value={bio} onChangeText={setBio} multiline />
       </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </Screen>
   );
 }

@@ -13,6 +13,7 @@ import { CampusSearchBar } from "@/components/campus-search-bar";
 import { EmptyState } from "@/components/empty-state";
 import { Icon } from "@/components/icon";
 import { NotificationBell } from "@/components/notification-bell";
+import { Screen } from "@/components/screen";
 import { FeedSkeletonList } from "@/components/skeleton-loader";
 import { StudentAvatar, TagPill } from "@/components/student-avatar";
 import { MOCK_STUDENTS, TRENDING_TAGS } from "@/constants/mock-data";
@@ -23,6 +24,7 @@ import {
   useAnnouncements,
 } from "@/hooks/use-announcements";
 import { useTheme } from "@/hooks/use-theme";
+import { useTabBarHeight } from "@/hooks/use-tab-bar-height";
 import { useAuth } from "@/providers/auth-provider";
 import { useProfileStore } from "@/store/use-profile-store";
 
@@ -43,6 +45,7 @@ export default function HomeScreen() {
   );
 
   const firstName = getProfileFirstName(profile, user?.email);
+  const tabBarHeight = useTabBarHeight();
 
   const handleRefresh = useCallback(async () => {
     if (process.env.EXPO_OS === "ios") {
@@ -53,15 +56,14 @@ export default function HomeScreen() {
   }, [queryClient, refetch]);
 
   return (
-    <ScrollView
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{
-        padding: spacing.sm,
-        paddingBottom: 120,
-        gap: spacing.sm,
-        backgroundColor: theme.background,
-      }}
-      style={{ flex: 1, backgroundColor: theme.background }}
+    <Screen>
+      <ScrollView
+        contentContainerStyle={{
+          padding: spacing.sm,
+          paddingBottom: tabBarHeight,
+          gap: spacing.sm,
+        }}
+        style={{ flex: 1 }}
       refreshControl={
         <RefreshControl
           refreshing={isRefetching}
@@ -186,5 +188,6 @@ export default function HomeScreen() {
         ))
       )}
     </ScrollView>
+    </Screen>
   );
 }

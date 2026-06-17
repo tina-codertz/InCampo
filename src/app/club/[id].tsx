@@ -10,10 +10,12 @@ import {
   Text,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { BackButton } from "@/components/icon-button";
 import { Icon } from "@/components/icon";
+import { Screen } from "@/components/screen";
 import { TagPill } from "@/components/student-avatar";
 import { radius, spacing } from "@/constants/theme";
 import { useClub } from "@/hooks/use-clubs";
@@ -23,6 +25,7 @@ import { useClubsStore } from "@/store/use-clubs-store";
 export default function ClubDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const { data: club, isLoading, isError } = useClub(id ?? "");
 
@@ -54,31 +57,26 @@ export default function ClubDetailScreen() {
 
   if (isLoading) {
     return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: theme.background,
-        }}
-      >
-        <ActivityIndicator color={theme.primary} />
-      </View>
+      <Screen>
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator color={theme.primary} />
+        </View>
+      </Screen>
     );
   }
 
   if (isError || !club) {
     return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: theme.background,
-          padding: spacing.md,
-          gap: spacing.sm,
-        }}
-      >
+      <Screen>
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            padding: spacing.md,
+            gap: spacing.sm,
+          }}
+        >
         <Text selectable style={{ color: theme.textPrimary, fontSize: 18, fontWeight: "700" }}>
           Club not found
         </Text>
@@ -87,16 +85,17 @@ export default function ClubDetailScreen() {
             Go back
           </Text>
         </Pressable>
-      </View>
+        </View>
+      </Screen>
     );
   }
 
   return (
-    <ScrollView
-      contentInsetAdjustmentBehavior="automatic"
-      style={{ flex: 1, backgroundColor: theme.background }}
-      contentContainerStyle={{ paddingBottom: spacing.xl }}
-    >
+    <Screen edges={["left", "right", "bottom"]}>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: spacing.xl }}
+        style={{ flex: 1 }}
+      >
       <View style={{ position: "relative" }}>
         <Image
           source={{ uri: club.imageUrl }}
@@ -116,7 +115,7 @@ export default function ClubDetailScreen() {
         <View
           style={{
             position: "absolute",
-            top: spacing.sm,
+            top: insets.top + spacing.xs,
             left: spacing.sm,
             zIndex: 1,
           }}
@@ -229,5 +228,6 @@ export default function ClubDetailScreen() {
         </View>
       </Animated.View>
     </ScrollView>
+    </Screen>
   );
 }

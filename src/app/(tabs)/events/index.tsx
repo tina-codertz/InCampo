@@ -10,14 +10,17 @@ import {
   FeaturedEventCard,
 } from "@/components/event-card";
 import { FilterChips } from "@/components/filter-chips";
+import { Screen } from "@/components/screen";
 import { EventsSkeletonList } from "@/components/skeleton-loader";
 import { EVENT_FILTERS } from "@/constants/mock-data";
 import { spacing } from "@/constants/theme";
 import { filterEvents, useEvents } from "@/hooks/use-events";
 import { useTheme } from "@/hooks/use-theme";
+import { useTabBarHeight } from "@/hooks/use-tab-bar-height";
 
 export default function EventsScreen() {
   const { theme } = useTheme();
+  const tabBarHeight = useTabBarHeight();
   const queryClient = useQueryClient();
   const { data: events = [], isLoading, isRefetching, refetch } = useEvents();
 
@@ -39,15 +42,14 @@ export default function EventsScreen() {
   }, [queryClient, refetch]);
 
   return (
-    <ScrollView
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{
-        padding: spacing.sm,
-        paddingBottom: 120,
-        gap: spacing.sm,
-        backgroundColor: theme.background,
-      }}
-      style={{ flex: 1, backgroundColor: theme.background }}
+    <Screen>
+      <ScrollView
+        contentContainerStyle={{
+          padding: spacing.sm,
+          paddingBottom: tabBarHeight,
+          gap: spacing.sm,
+        }}
+        style={{ flex: 1 }}
       refreshControl={
         <RefreshControl
           refreshing={isRefetching}
@@ -102,5 +104,6 @@ export default function EventsScreen() {
         )
       )}
     </ScrollView>
+    </Screen>
   );
 }

@@ -5,6 +5,7 @@ import { Pressable, ScrollView, Switch, Text, View } from "react-native";
 
 import { CloseButton } from "@/components/icon-button";
 import { Icon } from "@/components/icon";
+import { Screen } from "@/components/screen";
 import { radius, spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/providers/auth-provider";
@@ -167,11 +168,11 @@ export default function SettingsScreen() {
   );
 
   return (
-    <ScrollView
-      contentInsetAdjustmentBehavior="automatic"
-      style={{ flex: 1, backgroundColor: theme.background }}
-      contentContainerStyle={{ padding: spacing.sm, gap: spacing.sm }}
-    >
+    <Screen edges={["top", "left", "right", "bottom"]}>
+      <ScrollView
+        contentContainerStyle={{ padding: spacing.sm, gap: spacing.sm }}
+        style={{ flex: 1 }}
+      >
       <View
         style={{
           flexDirection: "row",
@@ -287,6 +288,7 @@ export default function SettingsScreen() {
       >
         Incampo · Version 1.0.0
       </Text>
-    </ScrollView>
+      </ScrollView>
+    </Screen>
   );
 }

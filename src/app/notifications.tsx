@@ -7,6 +7,7 @@ import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native"
 import { CloseButton } from "@/components/icon-button";
 import { EmptyState } from "@/components/empty-state";
 import { FilterChips } from "@/components/filter-chips";
+import { Screen } from "@/components/screen";
 import { Icon } from "@/components/icon";
 import { NotificationItemCard } from "@/components/notification-item";
 import { NotificationBadge } from "@/components/notification-bell";
@@ -74,14 +75,13 @@ export default function NotificationsScreen() {
   }, [queryClient, refetch]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background }}>
+    <Screen edges={["top", "left", "right", "bottom"]}>
       <View
         style={{
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
           paddingHorizontal: spacing.sm,
-          paddingTop: spacing.sm,
           paddingBottom: spacing.xs,
         }}
       >
@@ -120,12 +120,12 @@ export default function NotificationsScreen() {
       </View>
 
       <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           padding: spacing.sm,
           gap: spacing.sm,
           flexGrow: 1,
         }}
+        style={{ flex: 1 }}
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
@@ -177,6 +177,6 @@ export default function NotificationsScreen() {
           ))
         )}
       </ScrollView>
-    </View>
+    </Screen>
   );
 }

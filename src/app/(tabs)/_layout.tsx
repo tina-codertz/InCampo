@@ -36,6 +36,17 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
+        sceneStyle: { backgroundColor: theme.background },
+        tabBarStyle: {
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "transparent",
+          borderTopWidth: 0,
+          elevation: 0,
+          shadowOpacity: 0,
+        },
       }}
     >
       <Tabs.Screen name="home" options={{ title: "Home" }} />
