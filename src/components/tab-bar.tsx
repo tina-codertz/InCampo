@@ -6,14 +6,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Icon } from "@/components/icon";
 import {
-  TAB_BAR_FLOATING_OFFSET,
   TAB_BAR_ICON_SIZE,
   TAB_BAR_ITEM_GAP,
   TAB_BAR_LABEL_HEIGHT,
-  TAB_BAR_PILL_HEIGHT,
   TAB_BAR_VERTICAL_PADDING,
 } from "@/constants/layout";
-import { radius, spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import type { TabRoute } from "@/types";
 
@@ -65,84 +62,74 @@ export function TabBar() {
   const activeRoute = TABS.find((tab) => pathname.includes(tab.route))?.route ?? "home";
 
   return (
-    <View
+    <BlurView
+      intensity={isDark ? 72 : 88}
+      tint={isDark ? "dark" : "light"}
       style={{
-        paddingHorizontal: spacing.sm,
-        paddingBottom: insets.bottom + TAB_BAR_FLOATING_OFFSET,
-        backgroundColor: "transparent",
+        width: "100%",
+        borderTopWidth: 1,
+        borderTopColor: theme.border,
+        backgroundColor: theme.tabBar,
+        paddingTop: TAB_BAR_VERTICAL_PADDING,
+        paddingBottom: Math.max(insets.bottom, TAB_BAR_VERTICAL_PADDING),
       }}
     >
-      <BlurView
-        intensity={isDark ? 60 : 80}
-        tint={isDark ? "dark" : "light"}
+      <View
         style={{
-          height: TAB_BAR_PILL_HEIGHT,
-          borderRadius: radius.sheet,
-          overflow: "hidden",
-          borderWidth: 1,
-          borderColor: theme.border,
-          backgroundColor: theme.tabBar,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-around",
+          paddingHorizontal: TAB_BAR_VERTICAL_PADDING,
         }}
       >
-        <View
-          style={{
-            flex: 1,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-around",
-            paddingVertical: TAB_BAR_VERTICAL_PADDING,
-            paddingHorizontal: spacing.xs,
-          }}
-        >
-          {TABS.map((tab) => {
-            const isActive = activeRoute === tab.route;
+        {TABS.map((tab) => {
+          const isActive = activeRoute === tab.route;
 
-            return (
-              <Pressable
-                key={tab.route}
-                onPress={() => {
-                  if (process.env.EXPO_OS === "ios") {
-                    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  }
-                  router.push(tab.href);
-                }}
+          return (
+            <Pressable
+              key={tab.route}
+              onPress={() => {
+                if (process.env.EXPO_OS === "ios") {
+                  void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }
+                router.push(tab.href);
+              }}
+              style={{
+                alignItems: "center",
+                gap: TAB_BAR_ITEM_GAP,
+                minWidth: 64,
+              }}
+            >
+              <View
                 style={{
+                  width: TAB_BAR_ICON_SIZE,
+                  height: TAB_BAR_ICON_SIZE,
+                  borderRadius: TAB_BAR_ICON_SIZE / 2,
                   alignItems: "center",
-                  gap: TAB_BAR_ITEM_GAP,
-                  minWidth: 64,
+                  justifyContent: "center",
+                  backgroundColor: isActive ? theme.primaryMuted : "transparent",
                 }}
               >
-                <View
-                  style={{
-                    width: TAB_BAR_ICON_SIZE,
-                    height: TAB_BAR_ICON_SIZE,
-                    borderRadius: TAB_BAR_ICON_SIZE / 2,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: isActive ? theme.primaryMuted : "transparent",
-                  }}
-                >
-                  <Icon
-                    name={isActive ? tab.iconFilled : tab.icon}
-                    size={22}
-                    color={isActive ? theme.primary : theme.textMuted}
-                  />
-                </View>
-                <Text
-                  style={{
-                    fontSize: 11,
-                    lineHeight: TAB_BAR_LABEL_HEIGHT,
-                    fontWeight: isActive ? "600" : "500",
-                    color: isActive ? theme.primary : theme.textMuted,
-                  }}
-                >
-                  {tab.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </BlurView>
-    </View>
+                <Icon
+                  name={isActive ? tab.iconFilled : tab.icon}
+                  size={22}
+                  color={isActive ? theme.primary : theme.textMuted}
+                />
+              </View>
+              <Text
+                style={{
+                  fontSize: 11,
+                  lineHeight: TAB_BAR_LABEL_HEIGHT,
+                  fontWeight: isActive ? "600" : "500",
+                  color: isActive ? theme.primary : theme.textMuted,
+                }}
+              >
+                {tab.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </BlurView>
   );
 }

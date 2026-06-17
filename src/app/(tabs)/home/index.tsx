@@ -15,8 +15,8 @@ import { Icon } from "@/components/icon";
 import { NotificationBell } from "@/components/notification-bell";
 import { Screen } from "@/components/screen";
 import { FeedSkeletonList } from "@/components/skeleton-loader";
-import { StudentAvatar, TagPill } from "@/components/student-avatar";
-import { MOCK_STUDENTS, TRENDING_TAGS } from "@/constants/mock-data";
+import { TagPill } from "@/components/student-avatar";
+import { TRENDING_TAGS } from "@/constants/mock-data";
 import { radius, spacing } from "@/constants/theme";
 import { getProfileFirstName } from "@/lib/profile-from-auth";
 import {
@@ -112,22 +112,6 @@ export default function HomeScreen() {
           if (text) setSelectedTag(undefined);
         }}
       />
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 16, paddingVertical: 4 }}
-      >
-        {MOCK_STUDENTS.map((student) => (
-          <StudentAvatar
-            key={student.id}
-            initials={student.initials}
-            color={student.avatarColor}
-            name={student.name}
-            showName
-          />
-        ))}
-      </ScrollView>
 
       <View
         style={{
